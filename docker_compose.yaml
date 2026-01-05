@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Base de Datos InfluxDB
+  influxdb:
+    image: influxdb:2.7
+    container_name: guardian_db
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=alejandro
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password_seguro_123
+      - DOCKER_INFLUXDB_INIT_ORG=agro_tech
+      - DOCKER_INFLUXDB_INIT_BUCKET=telemetry_silo
+    networks:
+      - guardian_network
+
+  # Tu API FastAPI
+  api:
+    build: .
+    container_name: guardian_api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - influxdb
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=my-super-secret-token
+    networks:
+      - guardian_network
+
+networks:
+  guardian_network:
+    driver: bridge
+
+volumes:
+  influxdb_data:
