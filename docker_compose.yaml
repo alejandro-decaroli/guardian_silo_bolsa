@@ -1,40 +1,46 @@
-version: '3.8'
-
 services:
-  # Base de Datos InfluxDB
-  influxdb:
-    image: influxdb:2.7
-    container_name: guardian_db
-    ports:
-      - "8086:8086"
-    volumes:
-      - influxdb_data:/var/lib/influxdb2
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=alejandro
-      - DOCKER_INFLUXDB_INIT_PASSWORD=password_seguro_123
-      - DOCKER_INFLUXDB_INIT_ORG=agro_tech
-      - DOCKER_INFLUXDB_INIT_BUCKET=telemetry_silo
-    networks:
-      - guardian_network
-
-  # Tu API FastAPI
-  api:
+  guardian_silo:
     build: .
-    container_name: guardian_api
+    container_name: gsb
     ports:
       - "8000:8000"
     depends_on:
-      - influxdb
-    environment:
-      - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_TOKEN=my-super-secret-token
+      - influxdb3-core
     networks:
-      - guardian_network
+      - silo_net
+  influxdb3-core:
+    image: influxdb:3-core
+    container_name: influxdb3
+    ports:
+      - 8181:8181
+    command:
+      - influxdb3
+    volumes:
+      - type: bind
+        # Path to store data on your host system
+        source: ~/.influxdb3/data
+        # Path to store data in the container
+        target: /var/lib/influxdb3/data
+      - type: bind
+        # Path to store plugins on your host system
+        source: ~/.influxdb3/plugins
+        # Path to store plugins in the container
+        target: /var/lib/influxdb3/plugins
+    networks:
+      - silo_net
+  influxdb3-explorer:
+    image: influxdata/influxdb3-ui:1.4.0
+    container_name: influxdb3_explorer
+    command: ["--mode=admin"]
+    ports:
+      - "8888:80"
+    volumes:
+      - ./config:/app-root/config:ro
+    depends_on:
+      - influxdb3-core
+    networks:
+      - silo_net
 
 networks:
-  guardian_network:
-    driver: bridge
-
-volumes:
-  influxdb_data:
+  silo_net:
+    name: red_monitoreo_silos

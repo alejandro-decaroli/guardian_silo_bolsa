@@ -1,8 +1,8 @@
 # Usamos una imagen base liviana de Python
-FROM python:3.12-slim
+FROM python:3.13
 
 # Instalamos Poetry
-ENV POETRY_VERSION=1.8.2
+ENV POETRY_VERSION=2.2.1
 RUN pip install "poetry==$POETRY_VERSION"
 
 # Configuramos el directorio de trabajo
@@ -22,4 +22,4 @@ COPY src/ ./src/
 EXPOSE 8000
 
 # Comando para ejecutar la app
-CMD ["uvicorn", "src.guardian_silo.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.guardian_silo_bolsa.main:app", "--host", "0.0.0.0", "--port", "8000"]
