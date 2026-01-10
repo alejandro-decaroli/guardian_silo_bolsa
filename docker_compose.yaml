@@ -1,13 +1,25 @@
 services:
-  guardian_silo:
+  guardian_api:
     build: .
-    container_name: gsb
+    container_name: guardian_silo_api
     ports:
       - "8000:8000"
     depends_on:
       - influxdb3-core
     networks:
       - silo_net
+
+  simulator:
+    build: .
+    container_name: fake_sensor_data
+    depends_on:
+      - guardian_api
+    networks:
+      - silo_net
+    command: python src/guardian_silo_bolsa/simulator.py
+    environment:
+      - .env
+
   influxdb3-core:
     image: influxdb:3-core
     container_name: influxdb3
@@ -28,6 +40,7 @@ services:
         target: /var/lib/influxdb3/plugins
     networks:
       - silo_net
+      
   influxdb3-explorer:
     image: influxdata/influxdb3-ui:1.4.0
     container_name: influxdb3_explorer
