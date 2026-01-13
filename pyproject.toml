@@ -1,17 +1,18 @@
 [project]
 name = "guardian-silo-bolsa"
-version = "0.1.0"
+version = "0.2.0"
 description = "Herramienta de monitoreo y alerta enfocada en el deterioro de granos en silo bolsas"
 authors = [
     {name = "Alejandro",email = "alejandro.decaroli.97@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<4.0"
 dependencies = [
     "pandas (>=2.3.3,<3.0.0)",
     "fastapi (>=0.128.0,<0.129.0)",
     "uvicorn (>=0.40.0,<0.41.0)",
-    "python-dotenv (>=1.2.1,<2.0.0)"
+    "python-dotenv (>=1.2.1,<2.0.0)",
+    "influxdb3-python (>=0.17.0,<0.18.0)"
 ]
 
 [tool.poetry]
