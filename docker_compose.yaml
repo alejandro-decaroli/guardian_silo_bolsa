@@ -10,6 +10,8 @@ services:
       - influxdb3-core
     networks:
       - silo_net
+    volumes:
+      - ./backups:/app/backups
 
   simulator:
     build: .
@@ -31,14 +33,10 @@ services:
       - influxdb3
     volumes:
       - type: bind
-        # Path to store data on your host system
         source: ~/.influxdb3/data
-        # Path to store data in the container
         target: /var/lib/influxdb3/data
       - type: bind
-        # Path to store plugins on your host system
         source: ~/.influxdb3/plugins
-        # Path to store plugins in the container
         target: /var/lib/influxdb3/plugins
     networks:
       - silo_net

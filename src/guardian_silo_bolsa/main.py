@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from datetime import datetime
 import requests
 import os
@@ -12,37 +11,18 @@ from influxdb_client_3 import (
   write_client_options
   )
 from dotenv import load_dotenv
+from .models import LecturaSilo
+from .utils import guardar_en_csv
+from .db import client, database
 
 load_dotenv()
 
-host = os.getenv('INFLUX_HOST', "http://influxdb3-core:8181")
-token = os.getenv('INFLUX_TOKEN')
-database = os.getenv('INFLUX_DATABASE', "guardian_db")
-
-client = InfluxDBClient3(host=host,
-                        database=database,
-                        token=token)                       
-
 app = FastAPI(title="Guardián de Silobolsas API")
 
-class Medidas(BaseModel):
-    temp: float
-    hum: float
-    co2: float
-
-
-class LecturaSilo(BaseModel):
-    grano: str
-    sensor_id: str
-    silo: str
-    timestamp: str
-    measurements: Medidas
-
 @app.post("/ingest")
-async def recibir_datos(datos: LecturaSilo): 
+async def guardar_registro(datos: LecturaSilo): 
+
     try:
-        
-        print(f"Recibido: {datos.silo} - Grano: {datos.grano}")
 
         point = {
             "measurement": database, 
@@ -61,11 +41,12 @@ async def recibir_datos(datos: LecturaSilo):
         
         client.write(record=point) 
         
-        return {"status code": 200, "msg": "Registro escrito con éxito"}
+        guardar_en_csv(datos)
+
+        return {"status code": 204}
     
     except Exception as e:
-        print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Error durante la escritura")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
 async def root():
