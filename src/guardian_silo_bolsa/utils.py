@@ -26,9 +26,9 @@ def guardar_en_csv(datos: LecturaSilo) -> None:
             datos.silo,
             datos.grano,
             datos.sensor_id,
-            datos.measurements.temp,
-            datos.measurements.hum,
-            datos.measurements.co2
+            datos.temp,
+            datos.hum,
+            datos.co2
         ])
 
         f.flush()

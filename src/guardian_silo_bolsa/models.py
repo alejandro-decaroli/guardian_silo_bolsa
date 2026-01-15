@@ -1,14 +1,11 @@
 from pydantic import BaseModel
-
-class Medidas(BaseModel):
-    temp: float
-    hum: float
-    co2: float
-
+from typing import Optional
 
 class LecturaSilo(BaseModel):
     grano: str
     sensor_id: str
     silo: str
     timestamp: str
-    measurements: Medidas
+    temp: Optional[float]
+    hum: Optional[float]
+    co2: Optional[float]
