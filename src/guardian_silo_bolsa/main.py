@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, BackgroundTasks
 from datetime import datetime
 import requests
 import os
@@ -15,13 +15,14 @@ from .models import LecturaSilo
 from .utils import guardar_en_csv
 from .db import client, database
 from fastapi.responses import JSONResponse
+from .notification import chequear_umbrales
 
 load_dotenv()
 
 app = FastAPI(title="Guardián de Silobolsas API")
 
 @app.post("/ingest")
-async def guardar_registro(datos: LecturaSilo) -> JSONResponse: 
+async def guardar_registro(datos: LecturaSilo, background_tasks: BackgroundTasks) -> JSONResponse: 
 
     try:
 
@@ -44,6 +45,9 @@ async def guardar_registro(datos: LecturaSilo) -> JSONResponse:
                     "fields": fields,
                     "timestamp": datos.timestamp
                 }
+
+
+        background_tasks.add_task(chequear_umbrales, datos)
 
         if not fields:
 

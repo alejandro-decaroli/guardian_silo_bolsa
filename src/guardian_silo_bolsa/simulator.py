@@ -26,20 +26,25 @@ class Sensor:
         
         if self.modo == "NORMAL":
 
-            if self.temp == None:
+            if self.temp is None:
                 self.temp = round(20 + random.uniform(-0.1, 0.1), 2)
-            if self.hum == None:
+            if self.hum is None:
                 self.hum = round(10 + random.uniform(-0.05, 0.05), 2)
-            if self.co2 == None:
+            if self.co2 is None:
                 self.co2 = round(350 + random.uniform(-0.05, 0.05), 2)
 
             if random.random() < 0.01:
                 self.modo = random.choice(["CALENTAMIENTO", "FALLA_SENSOR"])
             
         elif self.modo == "CALENTAMIENTO":
-            self.temp = round(self.temp + random.uniform(0.2, 0.5), 2)
-            self.co2 = round(self.hum + random.randint(20, 50), 2)
-            self.hum = round(self.co2 + random.uniform(0.1, 0.2), 2)
+            incremento_hum = random.uniform(0.05, 0.1)
+            self.hum = round(self.hum + incremento_hum, 2)
+
+            incremento_co2 = (self.hum * 2.5) + random.randint(10, 30)
+            self.co2 = round(self.co2 + incremento_co2, 2)
+
+            incremento_temp = (incremento_co2 / 100) + random.uniform(0.1, 0.3)
+            self.temp = round(self.temp + incremento_temp, 2)
 
             if self.temp > 45: 
                  self.modo = "FALLA_SENSOR"
@@ -70,10 +75,12 @@ class Sensor:
         return response
 
 sensores = [
-    Sensor("sensor_01", "Silo-Norte-Rosario", "soja_premium"), 
-    Sensor("sensor_02", "Silo-Sur-Casilda", "soja_base"), 
-    Sensor("sensor_03", "Silo-Este-Victoria", "maiz_2024"), 
-    Sensor("sensor_04", "Silo-Oeste-Roldan", "soja_premium")
+    Sensor("sensor_01", "soja", "Silo-Norte-Rosario"), 
+    Sensor("sensor_02", "soja", "Silo-Sur-Casilda"), 
+    Sensor("sensor_03", "maiz", "Silo-Este-Victoria"), 
+    Sensor("sensor_04", "trigo", "Silo-Oeste-Roldan"),
+    Sensor("sensor_05", "trigo", "Silo-este-Roldan"),
+    Sensor("sensor_06", "maiz", "Silo-oeste-Victoria")
     ]
 
 

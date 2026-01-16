@@ -1,6 +1,6 @@
 [project]
 name = "guardian-silo-bolsa"
-version = "0.3.0"
+version = "0.5.0"
 description = "Herramienta de monitoreo y alerta enfocada en el deterioro de granos en silo bolsas"
 authors = [
     {name = "Alejandro",email = "alejandro.decaroli.97@gmail.com"}
