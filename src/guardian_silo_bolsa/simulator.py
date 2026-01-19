@@ -31,7 +31,7 @@ class Sensor:
             if self.hum is None:
                 self.hum = round(10 + random.uniform(-0.05, 0.05), 2)
             if self.co2 is None:
-                self.co2 = round(350 + random.uniform(-0.05, 0.05), 2)
+                self.co2 = round(350 + random.uniform(-5, 5), 2)
 
             if random.random() < 0.01:
                 self.modo = random.choice(["CALENTAMIENTO", "FALLA_SENSOR"])

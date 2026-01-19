@@ -53,7 +53,23 @@ services:
       - influxdb3-core
     networks:
       - silo_net
+  grafana:
+    image: grafana/grafana
+    container_name: guardian_grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin 
+    networks:
+      - silo_net
+    depends_on:
+      - influxdb3-core
 
 networks:
   silo_net:
     name: red_monitoreo_silos
+
+volumes:
+  grafana_data:
