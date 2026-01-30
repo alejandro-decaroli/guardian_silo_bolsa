@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import csv
 from pathlib import Path
 import os
-from .models import LecturaSilo
+from .domain.models.models import LecturaSilo
 
 load_dotenv()
 # Definimos la ruta del archivo 

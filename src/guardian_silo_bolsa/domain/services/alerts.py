@@ -1,11 +1,8 @@
-import requests
-import os
-from dotenv import load_dotenv
 from datetime import timedelta
-from .models import LecturaSilo
+from ..models.models import LecturaSilo
 from typing import Dict
+from ...infrastructure.notifications.telegram import enviar_alarma_telegram
 
-load_dotenv()
 
 # Configuración de límites por tipo de grano
 THRESHOLDS = {
@@ -14,27 +11,14 @@ THRESHOLDS = {
     "trigo": {"hum": 15.5, "temp": 34.0, "co2": 700}
 }
 
-def enviar_alarma_telegram(mensaje):
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    
-    payload = {
-        "chat_id": chat_id,
-        "text": mensaje,
-        "parse_mode": "Markdown"
-    }
-    
-    try:
-        response = requests.post(url, json=payload)
-        response.raise_for_status()
-    except Exception as e:
-        print(f"❌ Error enviando Telegram: {e}")
-
 
 ultimas_alertas: Dict = {}
 
 def chequear_umbrales(datos: LecturaSilo) -> None:
+
+    """
+    Chequea los umbrales de los sensores y envía una alerta por Telegram si se superan
+    """
 
     alertas = []
 

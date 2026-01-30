@@ -8,6 +8,7 @@ services:
       - "8000:8000"
     depends_on:
       - influxdb3-core
+      - db_guardian
     networks:
       - silo_net
     volumes:
@@ -23,6 +24,18 @@ services:
     command: python src/guardian_silo_bolsa/simulator.py
     environment:
       - .env
+  db_guardian:
+    image: postgres:17-alpine
+    container_name: postgres_guardian
+    restart: always
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - silo_net
 
   influxdb3-core:
     image: influxdb:3-core
@@ -73,3 +86,4 @@ networks:
 
 volumes:
   grafana_data:
+  postgres_data:

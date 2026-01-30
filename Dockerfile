@@ -1,5 +1,5 @@
 # Usamos una imagen base liviana de Python
-FROM python:3.13
+FROM python:3.14
 
 # Instalamos Poetry
 ENV POETRY_VERSION=2.2.1
