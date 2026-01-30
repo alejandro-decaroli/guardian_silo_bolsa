@@ -165,5 +165,9 @@ Para explorar datos con el explorador de influxdb3 sigan las instrucciones segú
 
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+<img width="1582" height="668" alt="Screenshot 2026-01-19 at 16-25-10 Monitoreo en tiempo real - Dashboards - Grafana" src="https://github.com/user-attachments/assets/b058eb45-f9bc-447c-a880-f99e24c6988e" />
+<img width="1585" height="666" alt="Screenshot 2026-01-19 at 16-24-45 Monitoreo en tiempo real - Dashboards - Grafana" src="https://github.com/user-attachments/assets/c278ec08-f450-417c-a636-78c6c2eb23d3" />
+<img width="1590" height="679" alt="Screenshot 2026-01-19 at 16-24-35 Monitoreo en tiempo real - Dashboards - Grafana" src="https://github.com/user-attachments/assets/1eb236be-b40a-4eba-bfb3-b475d518d927" />
+<img width="1587" height="817" alt="Screenshot 2026-01-19 at 16-25-41 View panel - Monitoreo en tiempo real - Dashboards - Grafana" src="https://github.com/user-attachments/assets/a9f84101-e5fe-4472-b240-1ba9c2322d5b" />
+
 
