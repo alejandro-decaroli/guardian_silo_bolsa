@@ -70,6 +70,13 @@ API_URL=http://guardian_api:8000/ingest
 CSV_PATH=backups/data_backup.csv
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres 
+POSTGRES_DB=guardian_db
+POSTGRES_HOST=postgres_guardian
+POSTGRES_PORT=5432
+BACKEND_PORT=8000
+BACKEND_HOST=0.0.0.0
 ```
 
 

@@ -21,5 +21,8 @@ COPY src/ ./src/
 # Exponemos el puerto de FastAPI
 EXPOSE 8000
 
+ENV BACKEND_HOST=0.0.0.0
+ENV BACKEND_PORT=8000
+
 # Comando para ejecutar la app
-CMD ["uvicorn", "src.guardian_silo_bolsa.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD uvicorn src.guardian_silo_bolsa.main:app --host $BACKEND_HOST --port $BACKEND_PORT

@@ -8,6 +8,7 @@ from influxdb_client_3 import (
   )
 from dotenv import load_dotenv
 import os
+from ...application.interfaces.database import SensorDatabaseInterface
 
 load_dotenv()
 
@@ -18,3 +19,5 @@ database = os.getenv('INFLUX_DATABASE', "guardian_db")
 client = InfluxDBClient3(host=host,
                         database=database,
                         token=token) 
+
+influxdb = SensorDatabaseInterface(client=client)

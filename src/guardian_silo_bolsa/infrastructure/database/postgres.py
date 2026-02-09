@@ -1,0 +1,191 @@
+from sqlmodel import create_engine, Session, SQLModel, select, text
+from dotenv import load_dotenv
+from typing import Optional, List, Any, Type
+from ...application.interfaces.database import UserDatabaseInterface
+import os   
+from ...domain.models.models import (
+    Silobolsa,
+    Sensor,
+    Lote,
+    Campo,
+    Usuario,
+    UsuarioBase
+)
+from ...domain.models.exceptions import (
+    EntityAsociatedError,
+    EntityNotFoundError,
+    EntityAlreadyExistsError
+)
+
+load_dotenv()
+
+host = os.getenv('POSTGRES_HOST', "postgres_guardian")
+user = os.getenv('POSTGRES_USER', "postgres")
+password = os.getenv('POSTGRES_PASSWORD', "postgres")
+database = os.getenv('POSTGRES_DB', "guardian_db")
+port = os.getenv('POSTGRES_PORT', "5432")
+
+DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{database}"
+engine = create_engine(DATABASE_URL)
+
+
+class PostgresDatabase(UserDatabaseInterface):
+
+    def __init__(self, client=engine):
+        self.engine = client
+
+    def get_user_by_email(self, email: str) -> Optional[Usuario]:
+        raise NotImplementedError
+
+    def get_entity(self, entity_id: int, model: type[SQLModel]) -> Optional[SQLModel]:
+        """
+        Obtiene una entidad en base a su id.
+        
+        Args:
+            entity_id: ID de la entidad.
+        
+        Returns:
+            Entidad.
+        """
+        with Session(self.engine) as session:
+            try:
+                db_object: Optional[SQLModel] = session.get(model, entity_id)
+                if not db_object:
+                    raise EntityNotFoundError(model.__name__)
+                return db_object
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def get_entities(self, model: type[SQLModel]) -> Optional[List[SQLModel]]:
+        """
+        Obtiene una lista de entidades.
+        
+        Args:
+            model: Modelo a obtener.
+        
+        Returns:
+            Entidades.
+        """
+        with Session(self.engine) as session:
+            try:
+                db_objects: Optional[List[SQLModel]] = session.exec(select(model)).all()
+                return db_objects
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def create_entity(self, model: SQLModel) -> None:
+        """
+        Crea una entidad.
+        
+        Args:
+            model: Modelo a crear.
+        """
+        with Session(self.engine) as session:
+            try:
+                session.add(model)
+                session.commit()
+                session.refresh(model)
+                return model
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def update_entity(self, entity_id: int, model_class: Type[SQLModel], data: SQLModel) -> SQLModel:
+        """
+        Actualiza una entidad.
+        
+        Args:
+            entity_id: ID de la entidad.
+            model_class: Clase del modelo a actualizar.
+            data: Datos a actualizar.
+        
+        Returns:
+            Entidad actualizada.
+        """
+        with Session(self.engine) as session:
+            try:
+                # 1. Buscamos el registro actual por ID
+                db_object = session.get(model_class, entity_id)
+                if not db_object:
+                    raise EntityNotFoundError(model_class.__name__)
+
+                # 2. Extraemos los datos nuevos como diccionario
+                # exclude_unset=True es VITAL: evita que los campos que no mandaste
+                # en el JSON pisen los datos de la DB con Nones.
+                update_dict = data.model_dump(exclude_unset=True)
+
+                # 3. Actualizamos los atributos del objeto de la DB uno por uno
+                for key, value in update_dict.items():
+                    setattr(db_object, key, value)
+
+                # 4. Guardamos y refrescamos
+                session.add(db_object)
+                session.commit()
+                session.refresh(db_object)
+                return db_object
+                
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def delete_entity(self, entity_id: int, model: Type[SQLModel]) -> None:
+        """
+        Elimina una entidad.
+        
+        Args:
+            entity_id: ID de la entidad a eliminar.
+        """
+        with Session(self.engine) as session:
+            try:
+                db_object: Optional[SQLModel] = session.get(model, entity_id)
+                if db_object:
+                    session.delete(db_object)
+                    session.commit()
+                else:
+                    raise EntityNotFoundError(model.__name__)
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def create_db_and_tables(self) -> None:
+        """Crea la base de datos y las tablas."""
+        SQLModel.metadata.create_all(self.engine)
+
+    def connect(self) -> None:
+        """
+        Forza la conexión a la base de datos.
+        """
+        try:
+            with self.engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+            print("✅ Conexión a PostgreSQL establecida con éxito.")
+        except Exception as e:
+            print(f"❌ Error al conectar a PostgreSQL: {e}")
+            raise e
+
+    def close(self) -> None:
+        """
+        Cierra el pool de conexiones del engine.
+        """
+        try:
+            self.engine.dispose()
+            print("🔌 Pool de conexiones de PostgreSQL liberado.")
+        except Exception as e:
+            print(f"⚠️ Error al cerrar el motor de base de datos: {e}")
+
+    def get_status(self) -> dict:
+        """
+        Devuelve el estado de salud de la base de datos.
+        """
+        try:
+            with self.engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+            return {"status": "online", "database": "postgresql", "message": "Reachable"}
+        except Exception as e:
+            return {"status": "offline", "database": "postgresql", "error": str(e)}
+
+    
+
+

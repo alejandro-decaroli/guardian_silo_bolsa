@@ -8,11 +8,13 @@ services:
       - "8000:8000"
     depends_on:
       - influxdb3-core
-      - db_guardian
+      - postgres_guardian
     networks:
       - silo_net
     volumes:
       - ./backups:/app/backups
+      - ./src:/app/src
+    command: uvicorn src.guardian_silo_bolsa.main:app --host 0.0.0.0 --port 8000 --reload
 
   simulator:
     build: .
@@ -24,7 +26,7 @@ services:
     command: python src/guardian_silo_bolsa/simulator.py
     environment:
       - .env
-  db_guardian:
+  postgres_guardian:
     image: postgres:17-alpine
     container_name: postgres_guardian
     restart: always
