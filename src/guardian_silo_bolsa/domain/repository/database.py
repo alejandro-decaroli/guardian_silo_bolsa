@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Any, Optional
-from ...domain.models.models import Usuario
+from ..models.models import Usuario
+from sqlmodel import SQLModel
 
 class DatabaseInterface(ABC):
     """Interfaz base para la base de datos."""
@@ -37,22 +38,22 @@ class UserDatabaseInterface(DatabaseInterface):
         pass
 
     @abstractmethod
-    def get_entity(self, entity_id: int) -> Any:
+    def get_entity(self, entity_id: int) -> SQLModel:
         """Obtiene una entidad por su ID."""
         pass
 
     @abstractmethod
-    def get_entities(self) -> List[Any]:
+    def get_entities(self) -> List[SQLModel]:
         """Obtiene todas las entidades."""
         pass
 
     @abstractmethod
-    def create_entity(self, entity: Any) -> None:
+    def create_entity(self, model: SQLModel) -> SQLModel:
         """Crea una entidad."""
         pass
 
     @abstractmethod
-    def update_entity(self, entity: Any) -> None:
+    def update_entity(self, data: SQLModel) -> SQLModel:
         """Actualiza una entidad."""
         pass
 

@@ -3,8 +3,9 @@ from dotenv import load_dotenv
 from .infrastructure.api.main_router import main_router
 from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse
-from .domain.models.exceptions import AppError
+from .domain.exceptions.exceptions import AppError
 from .infrastructure.database.deps import postgres_db
+
 load_dotenv()
 
 @asynccontextmanager

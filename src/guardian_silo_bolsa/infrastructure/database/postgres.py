@@ -1,7 +1,7 @@
 from sqlmodel import create_engine, Session, SQLModel, select, text
 from dotenv import load_dotenv
 from typing import Optional, List, Any, Type
-from ...application.interfaces.database import UserDatabaseInterface
+from ...domain.repository.database import UserDatabaseInterface
 import os   
 from ...domain.models.models import (
     Silobolsa,
@@ -11,7 +11,7 @@ from ...domain.models.models import (
     Usuario,
     UsuarioBase
 )
-from ...domain.models.exceptions import (
+from ...domain.exceptions.exceptions import (
     EntityAsociatedError,
     EntityNotFoundError,
     EntityAlreadyExistsError
@@ -30,6 +30,8 @@ engine = create_engine(DATABASE_URL)
 
 
 class PostgresDatabase(UserDatabaseInterface):
+
+    """Implementación de la interfaz de base de datos para PostgreSQL."""
 
     def __init__(self, client=engine):
         self.engine = client
