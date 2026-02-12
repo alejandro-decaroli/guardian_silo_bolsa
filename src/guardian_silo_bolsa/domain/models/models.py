@@ -106,13 +106,14 @@ class CampoBase(SQLModel):
     latitud: float
     longitud: float
     nombre: str
+    usuario_id: int
 
 class Campo(CampoBase, table=True):
     """
     Tabla de campo.
     """
     id: int | None = Field(default=None, primary_key=True)
-    usuario_id: int = Field(default=None, foreign_key="usuario.id")
+    usuario_id: int = Field(foreign_key="usuario.id")
     usuario: Optional[Usuario] = Relationship(back_populates="campos")
     silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="campo")
 
