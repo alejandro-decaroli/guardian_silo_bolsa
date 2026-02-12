@@ -30,14 +30,17 @@ class SensorBase(SQLModel):
     """Base para la tabla de sensor."""
     modelo: str
     estado: EstadoSensor
+    usuario_id: int
 
 class Sensor(SensorBase, table=True):
     """
     Tabla de sensor.
     """
     id: int | None = Field(default=None, primary_key=True)
+    usuario_id: int = Field(foreign_key="usuario.id")
+    usuario: Optional["Usuario"] = Relationship(back_populates="sensores")
     silobolsa: Optional[Silobolsa] = Relationship(back_populates="sensor")
-
+    
 class SilobolsaLoteLink(SQLModel, table=True):
     """Tabla intermedia para la relación Muchos a Muchos entre Silobolsa y Lote"""
     silobolsa_id: Optional[int] = Field(
@@ -53,12 +56,15 @@ class LoteBase(SQLModel):
     grano: Grano
     fecha_cosecha: datetime
     observaciones: str
+    usuario_id: int
 
 class Lote(LoteBase, table=True):
     """
     Tabla de lote.
     """
     id: int | None = Field(default=None, primary_key=True)
+    usuario_id: int = Field(foreign_key="usuario.id")
+    usuario: Optional["Usuario"] = Relationship(back_populates="lotes")
     silobolsas: List[Silobolsa] = Relationship(
         back_populates="lotes", 
         link_model=SilobolsaLoteLink
@@ -73,6 +79,7 @@ class SilobolsaBase(SQLModel):
     longitud: float
     observaciones: Optional[str]
     estado: EstadoSilobolsa
+    usuario_id: int
 
 class Silobolsa(SilobolsaBase, table=True):
     """
@@ -81,6 +88,8 @@ class Silobolsa(SilobolsaBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     campo_id: int | None = Field(default=None, foreign_key="campo.id")
     sensor_id: Optional[int] = Field(default=None, foreign_key="sensor.id", unique=True)
+    usuario_id: int = Field(foreign_key="usuario.id")
+    usuario: Optional[Usuario] = Relationship(back_populates="silobolsas")   
     lotes: List[Lote] = Relationship(
         back_populates="silobolsas", 
         link_model=SilobolsaLoteLink
@@ -131,6 +140,10 @@ class Usuario(UsuarioBase, table=True):
     """
     id: int | None = Field(default=None, primary_key=True)
     campos: Optional[List[Campo]] = Relationship(back_populates="usuario")
+    sensores: Optional[List[Sensor]] = Relationship(back_populates="usuario")
+    lotes: Optional[List[Lote]] = Relationship(back_populates="usuario")
+    silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="usuario")
+
 
 
 
