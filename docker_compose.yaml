@@ -9,6 +9,7 @@ services:
     depends_on:
       - influxdb3-core
       - postgres_guardian
+    restart: always
     networks:
       - silo_net
     volumes:
@@ -55,6 +56,7 @@ services:
         target: /var/lib/influxdb3/plugins
     networks:
       - silo_net
+    restart: always
       
   influxdb3-explorer:
     image: influxdata/influxdb3-ui:1.4.0

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Any, Optional
-from ..models.models import Usuario
+from ..models.models import Usuario, UsuarioValidation
 from sqlmodel import SQLModel
 
 class DatabaseInterface(ABC):
@@ -33,7 +33,7 @@ class UserDatabaseInterface(DatabaseInterface):
     """Interfaz para la base de datos de usuarios. Encargada de manejar todos los datos relacionados con los usuarios."""
 
     @abstractmethod
-    def get_user_by_email(self, email: str) -> Optional[Usuario]:
+    def get_user_by_email(self, usuario_data: UsuarioValidation) -> Optional[Usuario]:
         """Obtiene un usuario por su email."""
         pass
 

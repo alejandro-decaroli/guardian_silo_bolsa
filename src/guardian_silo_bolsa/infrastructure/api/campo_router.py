@@ -9,6 +9,7 @@ from ...application.user_cases.campo import (
 from ..database.deps import postgres_db
 from ...domain.models.models import CampoBase, Campo
 from typing import List
+from ..security.deps import get_current_user
 
 def get_user_case(case_type: str):
     def _get_case():
@@ -19,7 +20,7 @@ def get_user_case(case_type: str):
         if case_type == "delete": return DeleteCampo(postgres_db)
     return _get_case
 
-campo_router = APIRouter(prefix="/campos", tags=["campos"])
+campo_router = APIRouter(prefix="/campos", tags=["campos"], dependencies=[Depends(get_current_user)])
 
 @campo_router.get("/{campo_id}", response_model=Campo)
 def get_campo(campo_id: int, service: GetCampo = Depends(get_user_case("get"))) -> Campo:

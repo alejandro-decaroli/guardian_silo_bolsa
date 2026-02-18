@@ -9,6 +9,7 @@ from ...application.user_cases.lote import (
 from ..database.deps import postgres_db
 from ...domain.models.models import Lote, LoteBase
 from typing import List, Dict
+from ..security.deps import get_current_user
 
 def get_user_case(case_type: str):
     def _get_case():
@@ -19,7 +20,7 @@ def get_user_case(case_type: str):
         if case_type == "delete": return DeleteLote(postgres_db)
     return _get_case
 
-lote_router = APIRouter(prefix="/lotes", tags=["lotes"])
+lote_router = APIRouter(prefix="/lotes", tags=["lotes"], dependencies=[Depends(get_current_user)])
 
 @lote_router.get("/{lote_id}", response_model=Lote)
 def get_lote(lote_id: int, service: GetLote = Depends(get_user_case("get"))) -> Lote:

@@ -9,6 +9,7 @@ from ...application.user_cases.sensor import (
 from ..database.deps import postgres_db
 from ...domain.models.models import Sensor, SensorBase
 from typing import List, Dict
+from ..security.deps import get_current_user
 
 def get_user_case(case_type: str):
     def _get_case():
@@ -19,7 +20,7 @@ def get_user_case(case_type: str):
         if case_type == "delete": return DeleteSensor(postgres_db)
     return _get_case
 
-sensor_router = APIRouter(prefix="/sensors", tags=["sensors"])
+sensor_router = APIRouter(prefix="/sensors", tags=["sensors"], dependencies=[Depends(get_current_user)])
 
 @sensor_router.get("/{sensor_id}", response_model=Sensor)
 def get_sensor(sensor_id: int, service: GetSensor = Depends(get_user_case("get"))) -> Sensor:

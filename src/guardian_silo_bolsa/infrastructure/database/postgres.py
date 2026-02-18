@@ -9,7 +9,8 @@ from ...domain.models.models import (
     Lote,
     Campo,
     Usuario,
-    UsuarioBase
+    UsuarioBase,
+    UsuarioValidation
 )
 from ...domain.exceptions.exceptions import (
     EntityAsociatedError,
@@ -36,8 +37,15 @@ class PostgresDatabase(UserDatabaseInterface):
     def __init__(self, client=engine):
         self.engine = client
 
-    def get_user_by_email(self, email: str) -> Optional[Usuario]:
-        raise NotImplementedError
+    def get_user_by_email(self, usuario_data: UsuarioValidation) -> Optional[Usuario]:
+        """Verifica si existe un usuario con el email proporcionado."""
+        with Session(self.engine) as session:
+            try:
+                db_object: Optional[SQLModel] = session.exec(select(Usuario).where(Usuario.email == usuario_data.email)).first()
+                return db_object
+            except Exception as e:
+                session.rollback()
+                raise e
 
     def get_entity(self, entity_id: int, model: type[SQLModel]) -> Optional[SQLModel]:
         """

@@ -8,7 +8,8 @@ from ...application.user_cases.silo import (
 )
 from ..database.deps import postgres_db
 from ...domain.models.models import Silobolsa, SilobolsaBase
-from typing import List, Dict
+from typing import List
+from ..security.deps import get_current_user
 
 def get_user_case(case_type: str):
     def _get_case():
@@ -19,7 +20,7 @@ def get_user_case(case_type: str):
         if case_type == "delete": return DeleteSilo(postgres_db)
     return _get_case
 
-silo_router = APIRouter(prefix="/silos", tags=["silos"])
+silo_router = APIRouter(prefix="/silos", tags=["silos"], dependencies=[Depends(get_current_user)])
 
 @silo_router.get("/{silo_id}", response_model=Silobolsa)
 def get_silo(silo_id: int, service: GetSilo = Depends(get_user_case("get"))) -> Silobolsa:

@@ -1,44 +1,102 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Response
 from ...application.user_cases.user import (
-    CreateUser, 
     GetUser, 
     GetUsers, 
     UpdateUser, 
-    DeleteUser
+    DeleteUser,
+    LoginUser,
+    SignUpUser
 )
 from ..database.deps import postgres_db
-from ...domain.models.models import Usuario, UsuarioBase
-from typing import List, Dict
+from ..security.auth_handler import auth_service_instance
+from ...domain.models.models import Usuario, UsuarioBase, UsuarioValidation
+from typing import List, Dict, Any
+from ..security.deps import get_current_user
 
-def get_user_case(case_type: str):
+def get_user_case(case_type: str) -> callable:
+    """
+    Factory function to get the appropriate user case service
+    """
     def _get_case():
         if case_type == "get": return GetUser(postgres_db)
         if case_type == "get_all": return GetUsers(postgres_db)
-        if case_type == "create": return CreateUser(postgres_db)
-        if case_type == "update": return UpdateUser(postgres_db)
+        if case_type == "update": return UpdateUser(postgres_db, auth_service_instance)
         if case_type == "delete": return DeleteUser(postgres_db)
+        if case_type == "login": return LoginUser(postgres_db, auth_service_instance)
+        if case_type == "signup": return SignUpUser(postgres_db, auth_service_instance)
     return _get_case
+
+def set_auth_cookie(response: Response, token: str) -> None:
+    """
+    setea la cookie de autenticación en la respuesta
+    """
+    response.set_cookie(
+        key="access_token", 
+        value=token, 
+        httponly=True,
+        max_age=None, # Cookie de sesión
+        samesite="lax",
+        secure=False 
+    )
 
 user_router = APIRouter(prefix="/users", tags=["users"])
 
-@user_router.get("/{user_id}", response_model=Usuario)
-def get_user(user_id: int, service: GetUser = Depends(get_user_case("get"))) -> Usuario:
+@user_router.post("/signup", status_code=status.HTTP_200_OK)
+def signup(
+    response: Response, 
+    credentials: UsuarioBase, 
+    service: SignUpUser = Depends(get_user_case("signup"))
+) -> Dict[str, Any]:
+    token, user = service.execute(credentials)
+    set_auth_cookie(response, token)
+
+    return {
+        "message": "signup exitoso",
+        "user": user
+    }
+
+@user_router.post("/login", status_code=status.HTTP_200_OK)
+def login(
+    response: Response, 
+    credentials: UsuarioValidation, 
+    service: LoginUser = Depends(get_user_case("login"))
+) -> Dict[str, Any]:
+    token, user = service.execute(credentials)
+    set_auth_cookie(response, token)
+    
+    return {
+        "message": "login exitoso",
+        "user": user
+    }
+
+@user_router.get("/{user_id}", response_model=Usuario, status_code=status.HTTP_200_OK)
+def get_user(user_id: int, service: GetUser = Depends(get_user_case("get")), current_user: Usuario = Depends(get_current_user)) -> Usuario:
     return service.execute(user_id)
 
 @user_router.get("/", status_code=status.HTTP_200_OK, response_model=List[Usuario])
-def get_users(service: GetUsers = Depends(get_user_case("get_all"))) -> List[Usuario]:
+def get_users(service: GetUsers = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Usuario]:
     return service.execute()
 
-@user_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Usuario)
-def create_user(user: UsuarioBase, service: CreateUser = Depends(get_user_case("create"))) -> Usuario:
-    db_user = Usuario.model_validate(user)
-    return service.execute(db_user)
-
 @user_router.put("/{user_id}", status_code=status.HTTP_200_OK)
-def update_user(user_id: int, user: UsuarioBase, service: UpdateUser = Depends(get_user_case("update"))) -> Usuario:
+def update_user(user_id: int, user: UsuarioBase, service: UpdateUser = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Usuario:
     db_user = Usuario.model_validate(user)
     return service.execute(user_id, db_user)
 
 @user_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(user_id: int, service: DeleteUser = Depends(get_user_case("delete"))) -> None:
+def delete_user(user_id: int, service: DeleteUser = Depends(get_user_case("delete")), current_user: Usuario = Depends(get_current_user)) -> None:
     service.execute(user_id)
+
+@user_router.post("/logout", status_code=status.HTTP_200_OK)
+def logout(
+    response: Response,
+    current_user: Usuario = Depends(get_current_user) 
+) -> Dict[str, str]:
+
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="lax",
+        secure=False
+    )
+
+    return {"message": "Logout exitoso, cookie eliminada"}

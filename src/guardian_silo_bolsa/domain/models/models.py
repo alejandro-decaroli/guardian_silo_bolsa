@@ -30,7 +30,6 @@ class SensorBase(SQLModel):
     """Base para la tabla de sensor."""
     modelo: str
     estado: EstadoSensor
-    usuario_id: int
 
 class Sensor(SensorBase, table=True):
     """
@@ -56,7 +55,6 @@ class LoteBase(SQLModel):
     grano: Grano
     fecha_cosecha: datetime
     observaciones: str
-    usuario_id: int
 
 class Lote(LoteBase, table=True):
     """
@@ -79,7 +77,6 @@ class SilobolsaBase(SQLModel):
     longitud: float
     observaciones: Optional[str]
     estado: EstadoSilobolsa
-    usuario_id: int
 
 class Silobolsa(SilobolsaBase, table=True):
     """
@@ -115,7 +112,6 @@ class CampoBase(SQLModel):
     latitud: float
     longitud: float
     nombre: str
-    usuario_id: int
 
 class Campo(CampoBase, table=True):
     """
@@ -131,6 +127,12 @@ class UsuarioBase(SQLModel):
     """Base para la tabla de usuario."""
     nombre: str
     apellido: str
+    email: EmailStr
+    password: str
+
+
+class UsuarioValidation(SQLModel):
+    """Base para la validación de usuario."""
     email: EmailStr
     password: str
 
