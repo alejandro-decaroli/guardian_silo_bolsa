@@ -7,37 +7,37 @@ class GetCampo:
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self, campo_id: int) -> Campo:
-        return self.repo.get_entity(campo_id, Campo)
+    def execute(self, campo_id: int, current_user_id: int) -> Campo:
+        return self.repo.get_entity(current_user_id, campo_id, Campo)
 
 class GetCampos:
     """ Caso de uso para obtener todos los campos """
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self) -> Optional[List[Campo]]:
-        return self.repo.get_entities(Campo)
+    def execute(self, current_user_id: int) -> Optional[List[Campo]]:
+        return self.repo.get_entities(current_user_id, Campo)
 
 class CreateCampo:
     """ Caso de uso para crear un campo """
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self, campo: CampoBase) -> Campo:
-        return self.repo.create_entity(campo)
+    def execute(self, campo: CampoBase, current_user_id: int) -> Campo:
+        return self.repo.create_entity(current_user_id, campo)
 
 class UpdateCampo:
     """ Caso de uso para actualizar un campo """
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self, campo_id: int, model: CampoBase) -> Optional[Campo]:
-        return self.repo.update_entity(campo_id, Campo, model)
+    def execute(self, campo_id: int, model: CampoBase, current_user_id: int) -> Optional[Campo]:
+        return self.repo.update_entity(current_user_id, campo_id, Campo, model)
 
 class DeleteCampo:
     """ Caso de uso para eliminar un campo """
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self, campo_id: int) -> None:
-        self.repo.delete_entity(campo_id, Campo)
+    def execute(self, campo_id: int, current_user_id: int) -> None:
+        self.repo.delete_entity(current_user_id, campo_id, Campo)

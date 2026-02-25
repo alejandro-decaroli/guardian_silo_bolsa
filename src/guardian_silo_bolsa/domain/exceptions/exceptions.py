@@ -41,7 +41,6 @@ class EntityConflictError(AppError):
 
 class InvalidCredentialsError(AppError):
     """Excepción lanzada cuando las credenciales son inválidas."""
-    def __init__(self):
-        message = "Credenciales inválidas."
+    def __init__(self, message: str = "Credenciales inválidas."):
         code = status.HTTP_401_UNAUTHORIZED
         super().__init__(message, code)

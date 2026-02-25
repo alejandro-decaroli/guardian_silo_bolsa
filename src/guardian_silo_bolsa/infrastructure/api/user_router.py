@@ -45,9 +45,9 @@ user_router = APIRouter(prefix="/users", tags=["users"])
 def signup(
     response: Response, 
     credentials: UsuarioBase, 
-    service: SignUpUser = Depends(get_user_case("signup"))
+    case: SignUpUser = Depends(get_user_case("signup"))
 ) -> Dict[str, Any]:
-    token, user = service.execute(credentials)
+    token, user = case.execute(credentials)
     set_auth_cookie(response, token)
 
     return {
@@ -59,9 +59,9 @@ def signup(
 def login(
     response: Response, 
     credentials: UsuarioValidation, 
-    service: LoginUser = Depends(get_user_case("login"))
+    case: LoginUser = Depends(get_user_case("login"))
 ) -> Dict[str, Any]:
-    token, user = service.execute(credentials)
+    token, user = case.execute(credentials)
     set_auth_cookie(response, token)
     
     return {
@@ -70,21 +70,21 @@ def login(
     }
 
 @user_router.get("/{user_id}", response_model=Usuario, status_code=status.HTTP_200_OK)
-def get_user(user_id: int, service: GetUser = Depends(get_user_case("get")), current_user: Usuario = Depends(get_current_user)) -> Usuario:
-    return service.execute(user_id)
+def get_user(user_id: int, case: GetUser = Depends(get_user_case("get")), current_user: Usuario = Depends(get_current_user)) -> Usuario:
+    return case.execute(user_id, current_user.role)
 
 @user_router.get("/", status_code=status.HTTP_200_OK, response_model=List[Usuario])
-def get_users(service: GetUsers = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Usuario]:
-    return service.execute()
+def get_users(case: GetUsers = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Usuario]:
+    return case.execute(current_user.role)
 
 @user_router.put("/{user_id}", status_code=status.HTTP_200_OK)
-def update_user(user_id: int, user: UsuarioBase, service: UpdateUser = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Usuario:
+def update_user(user_id: int, user: UsuarioBase, case: UpdateUser = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Usuario:
     db_user = Usuario.model_validate(user)
-    return service.execute(user_id, db_user)
+    return case.execute(user_id, current_user.id, db_user)
 
 @user_router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(user_id: int, service: DeleteUser = Depends(get_user_case("delete")), current_user: Usuario = Depends(get_current_user)) -> None:
-    service.execute(user_id)
+def delete_user(user_id: int, case: DeleteUser = Depends(get_user_case("delete")), current_user: Usuario = Depends(get_current_user)) -> None:
+    case.execute(user_id, current_user.id)
 
 @user_router.post("/logout", status_code=status.HTTP_200_OK)
 def logout(

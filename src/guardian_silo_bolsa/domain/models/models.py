@@ -145,6 +145,7 @@ class Usuario(UsuarioBase, table=True):
     sensores: Optional[List[Sensor]] = Relationship(back_populates="usuario")
     lotes: Optional[List[Lote]] = Relationship(back_populates="usuario")
     silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="usuario")
+    role: str = Field(default="user")
 
 
 

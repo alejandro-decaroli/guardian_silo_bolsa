@@ -10,6 +10,7 @@ from ..database.deps import postgres_db
 from ...domain.models.models import CampoBase, Campo
 from typing import List
 from ..security.deps import get_current_user
+from ...domain.models.models import Usuario
 
 def get_user_case(case_type: str):
     def _get_case():
@@ -23,25 +24,25 @@ def get_user_case(case_type: str):
 campo_router = APIRouter(prefix="/campos", tags=["campos"], dependencies=[Depends(get_current_user)])
 
 @campo_router.get("/{campo_id}", response_model=Campo)
-def get_campo(campo_id: int, service: GetCampo = Depends(get_user_case("get"))) -> Campo:
-    return service.execute(campo_id)
+def get_campo(campo_id: int, current_user: Usuario = Depends(get_current_user), case: GetCampo = Depends(get_user_case("get"))) -> Campo:
+    return case.execute(campo_id, current_user.id)
 
 @campo_router.get("/", status_code=status.HTTP_200_OK, response_model=List[Campo])
-def get_campos(service: GetCampos = Depends(get_user_case("get_all"))) -> List[Campo]:
-    return service.execute()
+def get_campos(case: GetCampos = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Campo]:
+    return case.execute(current_user.id)
 
 @campo_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Campo)
-def create_campo(campo: CampoBase, service: CreateCampo = Depends(get_user_case("create"))) -> Campo:
+def create_campo(campo: CampoBase, case: CreateCampo = Depends(get_user_case("create")), current_user: Usuario = Depends(get_current_user)) -> Campo:
     db_campo = Campo.model_validate(campo)
-    return service.execute(db_campo)
+    return case.execute(db_campo, current_user.id)
 
 @campo_router.put("/{campo_id}", status_code=status.HTTP_200_OK)
-def update_campo(campo_id: int, campo: CampoBase, service: UpdateCampo = Depends(get_user_case("update"))) -> Campo:
+def update_campo(campo_id: int, campo: CampoBase, case: UpdateCampo = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Campo:
     db_campo = Campo.model_validate(campo)
-    return service.execute(campo_id, db_campo)
+    return case.execute(campo_id, db_campo, current_user.id)
 
 @campo_router.delete("/{campo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_campo(campo_id: int, service: DeleteCampo = Depends(get_user_case("delete"))) -> None:
-    service.execute(campo_id)
+def delete_campo(campo_id: int, case: DeleteCampo = Depends(get_user_case("delete")), current_user: Usuario = Depends(get_current_user)) -> None:
+    case.execute(campo_id, current_user.id)
 
     

@@ -23,25 +23,25 @@ def get_user_case(case_type: str):
 lote_router = APIRouter(prefix="/lotes", tags=["lotes"], dependencies=[Depends(get_current_user)])
 
 @lote_router.get("/{lote_id}", response_model=Lote)
-def get_lote(lote_id: int, service: GetLote = Depends(get_user_case("get"))) -> Lote:
-    return service.execute(lote_id)
+def get_lote(lote_id: int, case: GetLote = Depends(get_user_case("get"))) -> Lote:
+    return case.execute(lote_id)
 
 @lote_router.get("/", status_code=status.HTTP_200_OK, response_model=List[Lote])
-def get_lotes(service: GetLotes = Depends(get_user_case("get_all"))) -> List[Lote]:
-    return service.execute()
+def get_lotes(case: GetLotes = Depends(get_user_case("get_all"))) -> List[Lote]:
+    return case.execute()
 
 @lote_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Lote)
-def create_lote(lote: LoteBase, service: CreateLote = Depends(get_user_case("create"))) -> Lote:
+def create_lote(lote: LoteBase, case: CreateLote = Depends(get_user_case("create"))) -> Lote:
     db_lote = Lote.model_validate(lote)
-    return service.execute(db_lote)
+    return case.execute(db_lote)
 
 @lote_router.put("/{lote_id}", status_code=status.HTTP_200_OK)
-def update_lote(lote_id: int, lote: LoteBase, service: UpdateLote = Depends(get_user_case("update"))) -> Lote:
+def update_lote(lote_id: int, lote: LoteBase, case: UpdateLote = Depends(get_user_case("update"))) -> Lote:
     db_lote = Lote.model_validate(lote)
-    return service.execute(lote_id, db_lote)
+    return case.execute(lote_id, db_lote)
 
 @lote_router.delete("/{lote_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_lote(lote_id: int, service: DeleteLote = Depends(get_user_case("delete"))) -> None:
-    service.execute(lote_id)
+def delete_lote(lote_id: int, case: DeleteLote = Depends(get_user_case("delete"))) -> None:
+    case.execute(lote_id)
 
 

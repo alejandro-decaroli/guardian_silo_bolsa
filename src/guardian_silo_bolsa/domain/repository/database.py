@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List, Any, Optional
-from ..models.models import Usuario, UsuarioValidation
+from typing import List, Any, Optional, Type
+from ..models.models import Usuario, UsuarioValidation, UsuarioBase
 from sqlmodel import SQLModel
 
 class DatabaseInterface(ABC):
@@ -38,27 +38,52 @@ class UserDatabaseInterface(DatabaseInterface):
         pass
 
     @abstractmethod
-    def get_entity(self, entity_id: int) -> SQLModel:
+    def delete_user(self, user_id: int) -> None:
+        """Elimina un usuario."""
+        pass
+
+    @abstractmethod
+    def get_all_users(self) -> List[Usuario]:
+        """Obtiene todos los usuarios."""
+        pass
+
+    @abstractmethod
+    def update_user(self, user_id: int, data: UsuarioBase) -> Usuario:
+        """Actualiza un usuario."""
+        pass
+
+    @abstractmethod
+    def get_user_by_id(self, user_id: int) -> Usuario:
+        """Obtiene un usuario por su ID."""
+        pass
+
+    @abstractmethod
+    def create_user(self, usuario_data: Usuario) -> Usuario:
+        """Crea un usuario."""
+        pass
+
+    @abstractmethod
+    def get_entity(self, current_user_id: int, entity_id: int, model: type[SQLModel]) -> SQLModel:
         """Obtiene una entidad por su ID."""
         pass
 
     @abstractmethod
-    def get_entities(self) -> List[SQLModel]:
+    def get_entities(self, current_user_id: int, model: type[SQLModel]) -> List[SQLModel]:
         """Obtiene todas las entidades."""
         pass
 
     @abstractmethod
-    def create_entity(self, model: SQLModel) -> SQLModel:
+    def create_entity(self, current_user_id: int, model: SQLModel) -> SQLModel:
         """Crea una entidad."""
         pass
 
     @abstractmethod
-    def update_entity(self, data: SQLModel) -> SQLModel:
+    def update_entity(self, current_user_id: int, entity_id: int, model_class: Type[SQLModel], data: SQLModel) -> SQLModel:
         """Actualiza una entidad."""
         pass
 
     @abstractmethod
-    def delete_entity(self, entity_id: int) -> None:
+    def delete_entity(self, current_user_id: int, entity_id: int, model: Type[SQLModel]) -> None:
         """Elimina una entidad."""
         pass
 

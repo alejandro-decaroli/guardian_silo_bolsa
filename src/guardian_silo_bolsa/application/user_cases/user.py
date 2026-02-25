@@ -10,8 +10,10 @@ class GetUser:
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self, user_id: int) -> Usuario:
-        db_user = self.repo.get_entity(user_id, Usuario)
+    def execute(self, user_id: int, role: str) -> Usuario:
+        if role != "admin":
+            raise InvalidCredentialsError("No tienes permisos para obtener este usuario")
+        db_user = self.repo.get_user_by_id(user_id)
         db_user.password = ""
         return db_user
 
@@ -20,8 +22,10 @@ class GetUsers:
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self) -> Optional[List[Usuario]]:
-        db_users = self.repo.get_entities(Usuario)
+    def execute(self, role: str) -> Optional[List[Usuario]]:
+        if role != "admin":
+            raise InvalidCredentialsError("No tienes permisos para obtener todos los usuarios")
+        db_users = self.repo.get_all_users()
         for user in db_users:
             user.password = ""
         return db_users
@@ -32,9 +36,11 @@ class UpdateUser:
         self.repo = repo
         self.auth_service = auth_service
     
-    def execute(self, user_id: int, model: UsuarioBase) -> Optional[Usuario]:
+    def execute(self, user_id: int, current_user_id: int, model: UsuarioBase) -> Optional[Usuario]:
+        if current_user_id != user_id:
+            raise InvalidCredentialsError("No tienes permisos para actualizar este usuario")
         model.password = self.auth_service.hash_password(model.password)
-        db_user = self.repo.update_entity(user_id, Usuario, model)
+        db_user = self.repo.update_user(user_id, model)
         db_user.password = ""
         return db_user
 
@@ -43,8 +49,10 @@ class DeleteUser:
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self, user_id: int) -> None:
-        self.repo.delete_entity(user_id, Usuario)
+    def execute(self, user_id: int, current_user_id: int) -> None:
+        if current_user_id != user_id:
+            raise InvalidCredentialsError("No tienes permisos para eliminar este usuario")
+        self.repo.delete_user(user_id)
 
 class LoginUser:
     """ Caso de uso para iniciar sesión """
@@ -59,9 +67,9 @@ class LoginUser:
             raise InvalidCredentialsError() 
 
         token = self.auth_service.create_token(data={"sub": str(user.id)})
-        db_user = self.repo.get_entity(user.id, Usuario)
-        db_user.password = ""
-        return token, db_user
+    
+        user.password = ""
+        return token, user
 
 class SignUpUser:
     """ Caso de uso para registrar un usuario """
@@ -73,7 +81,7 @@ class SignUpUser:
         # Hasheamos antes de mandar al repo
         user_in.password = self.auth_service.hash_password(user_in.password)
         user = Usuario.model_validate(user_in)
-        db_user = self.repo.create_entity(user) 
+        db_user = self.repo.create_user(user) 
         db_user.password = ""
         token = self.auth_service.create_token(data={"sub": str(db_user.id)})
         return token, db_user

@@ -15,7 +15,8 @@ from ...domain.models.models import (
 from ...domain.exceptions.exceptions import (
     EntityAsociatedError,
     EntityNotFoundError,
-    EntityAlreadyExistsError
+    EntityAlreadyExistsError,
+    InvalidCredentialsError
 )
 
 load_dotenv()
@@ -47,7 +48,77 @@ class PostgresDatabase(UserDatabaseInterface):
                 session.rollback()
                 raise e
 
-    def get_entity(self, entity_id: int, model: type[SQLModel]) -> Optional[SQLModel]:
+    def get_user_by_id(self, user_id: int) -> Usuario:
+        """Obtiene un usuario por su ID."""
+        with Session(self.engine) as session:
+            try:
+                db_object: Optional[SQLModel] = session.exec(select(Usuario).where(Usuario.id == user_id)).first()
+                return db_object
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def get_all_users(self) -> List[Usuario]:
+        """Obtiene todos los usuarios."""
+        with Session(self.engine) as session:
+            try:
+                db_objects: List[SQLModel] = session.exec(select(Usuario)).all()
+                return db_objects
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def create_user(self, usuario_data: Usuario) -> Usuario:
+        """Crea un usuario."""
+        with Session(self.engine) as session:
+            try:
+                session.add(usuario_data)
+                session.commit()
+                session.refresh(usuario_data)
+                return usuario_data
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def update_user(self, entity_id: int, data: UsuarioBase) -> Usuario:
+        """Actualiza un usuario."""
+        with Session(self.engine) as session:
+            try:
+                db_user = session.get(Usuario, entity_id)
+                if not db_user:
+                    raise EntityNotFoundError("Usuario")
+                # 2. Extraemos los datos nuevos como diccionario
+                # exclude_unset=True es VITAL: evita que los campos que no mandaste
+                # en el JSON pisen los datos de la DB con Nones.
+                update_dict = data.model_dump(exclude_unset=True)
+
+                # 3. Actualizamos los atributos del objeto de la DB uno por uno
+                for key, value in update_dict.items():
+                    setattr(db_user, key, value)
+
+                # 4. Guardamos y refrescamos
+                session.add(db_user)
+                session.commit()
+                session.refresh(db_user)
+                return db_user
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def delete_user(self, user_id: int) -> None:
+        """Elimina un usuario."""
+        with Session(self.engine) as session:
+            try:
+                db_user = session.get(Usuario, user_id)
+                if not db_user:
+                    raise EntityNotFoundError("Usuario")
+                session.delete(db_user)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def get_entity(self, current_user_id: int, entity_id: int, model: type[SQLModel]) -> Optional[SQLModel]:
         """
         Obtiene una entidad en base a su id.
         
@@ -60,6 +131,8 @@ class PostgresDatabase(UserDatabaseInterface):
         with Session(self.engine) as session:
             try:
                 db_object: Optional[SQLModel] = session.get(model, entity_id)
+                if db_object.usuario_id != current_user_id:
+                    raise EntityNotFoundError(model.__name__)
                 if not db_object:
                     raise EntityNotFoundError(model.__name__)
                 return db_object
@@ -67,11 +140,12 @@ class PostgresDatabase(UserDatabaseInterface):
                 session.rollback()
                 raise e
 
-    def get_entities(self, model: type[SQLModel]) -> Optional[List[SQLModel]]:
+    def get_entities(self, current_user_id: int, model: type[SQLModel]) -> Optional[List[SQLModel]]:
         """
         Obtiene una lista de entidades.
         
         Args:
+            user_id: ID del usuario.
             model: Modelo a obtener.
         
         Returns:
@@ -79,13 +153,13 @@ class PostgresDatabase(UserDatabaseInterface):
         """
         with Session(self.engine) as session:
             try:
-                db_objects: Optional[List[SQLModel]] = session.exec(select(model)).all()
+                db_objects: Optional[List[SQLModel]] = session.exec(select(model).where(model.usuario_id == current_user_id)).all()
                 return db_objects
             except Exception as e:
                 session.rollback()
                 raise e
 
-    def create_entity(self, model: SQLModel) -> None:
+    def create_entity(self, current_user_id: int, model: SQLModel) -> SQLModel:
         """
         Crea una entidad.
         
@@ -94,6 +168,7 @@ class PostgresDatabase(UserDatabaseInterface):
         """
         with Session(self.engine) as session:
             try:
+                model.usuario_id = current_user_id
                 session.add(model)
                 session.commit()
                 session.refresh(model)
@@ -102,7 +177,7 @@ class PostgresDatabase(UserDatabaseInterface):
                 session.rollback()
                 raise e
 
-    def update_entity(self, entity_id: int, model_class: Type[SQLModel], data: SQLModel) -> SQLModel:
+    def update_entity(self, current_user_id: int, entity_id: int, model_class: Type[SQLModel], data: SQLModel) -> SQLModel:
         """
         Actualiza una entidad.
         
@@ -118,6 +193,8 @@ class PostgresDatabase(UserDatabaseInterface):
             try:
                 # 1. Buscamos el registro actual por ID
                 db_object = session.get(model_class, entity_id)
+                if db_object.usuario_id != current_user_id:
+                    raise EntityNotFoundError(model_class.__name__)
                 if not db_object:
                     raise EntityNotFoundError(model_class.__name__)
 
@@ -140,7 +217,7 @@ class PostgresDatabase(UserDatabaseInterface):
                 session.rollback()
                 raise e
 
-    def delete_entity(self, entity_id: int, model: Type[SQLModel]) -> None:
+    def delete_entity(self, current_user_id: int, entity_id: int, model: Type[SQLModel]) -> None:
         """
         Elimina una entidad.
         
@@ -150,6 +227,8 @@ class PostgresDatabase(UserDatabaseInterface):
         with Session(self.engine) as session:
             try:
                 db_object: Optional[SQLModel] = session.get(model, entity_id)
+                if db_object.usuario_id != current_user_id:
+                    raise EntityNotFoundError(model.__name__)
                 if db_object:
                     session.delete(db_object)
                     session.commit()

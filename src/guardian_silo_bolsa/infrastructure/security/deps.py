@@ -5,7 +5,7 @@ from ...domain.models.models import Usuario
 
 # src/infrastructure/api/deps.py
 
-def get_current_user(request: Request):
+def get_current_user(request: Request) -> Usuario:
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(
@@ -21,8 +21,8 @@ def get_current_user(request: Request):
         )
     
     user_id = payload.get("sub")
-    # Importante: Buscamos en el repo usando la clase Usuario
-    user = postgres_db.get_entity(int(user_id), Usuario) 
+    
+    user = postgres_db.get_user_by_id(int(user_id)) 
     
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario inexistente")
