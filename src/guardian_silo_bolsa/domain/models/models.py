@@ -63,7 +63,7 @@ class Lote(LoteBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id")
     usuario: Optional["Usuario"] = Relationship(back_populates="lotes")
-    silobolsas: List[Silobolsa] = Relationship(
+    silobolsas: Optional[List[Silobolsa]] = Relationship(
         back_populates="lotes", 
         link_model=SilobolsaLoteLink
     )
@@ -87,12 +87,12 @@ class Silobolsa(SilobolsaBase, table=True):
     sensor_id: Optional[int] = Field(default=None, foreign_key="sensor.id", unique=True)
     usuario_id: int = Field(foreign_key="usuario.id")
     usuario: Optional[Usuario] = Relationship(back_populates="silobolsas")   
-    lotes: List[Lote] = Relationship(
+    lotes: Optional[List[Lote]] = Relationship(
         back_populates="silobolsas", 
         link_model=SilobolsaLoteLink
     )
     sensor: Optional[Sensor] = Relationship(back_populates="silobolsa")
-    campo: Optional[Campo] = Relationship(back_populates="silobolsas")    
+    campo: Campo = Relationship(back_populates="silobolsas")    
     
 
 class LecturaSilo(SQLModel, table=True):

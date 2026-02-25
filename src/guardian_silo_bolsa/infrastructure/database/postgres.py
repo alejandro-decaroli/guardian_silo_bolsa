@@ -131,9 +131,9 @@ class PostgresDatabase(UserDatabaseInterface):
         with Session(self.engine) as session:
             try:
                 db_object: Optional[SQLModel] = session.get(model, entity_id)
-                if db_object.usuario_id != current_user_id:
-                    raise EntityNotFoundError(model.__name__)
                 if not db_object:
+                    raise EntityNotFoundError(model.__name__)
+                if db_object.usuario_id != current_user_id:
                     raise EntityNotFoundError(model.__name__)
                 return db_object
             except Exception as e:
@@ -168,7 +168,6 @@ class PostgresDatabase(UserDatabaseInterface):
         """
         with Session(self.engine) as session:
             try:
-                model.usuario_id = current_user_id
                 session.add(model)
                 session.commit()
                 session.refresh(model)
@@ -193,9 +192,9 @@ class PostgresDatabase(UserDatabaseInterface):
             try:
                 # 1. Buscamos el registro actual por ID
                 db_object = session.get(model_class, entity_id)
-                if db_object.usuario_id != current_user_id:
-                    raise EntityNotFoundError(model_class.__name__)
                 if not db_object:
+                    raise EntityNotFoundError(model_class.__name__)
+                if db_object.usuario_id != current_user_id:
                     raise EntityNotFoundError(model_class.__name__)
 
                 # 2. Extraemos los datos nuevos como diccionario
@@ -227,13 +226,12 @@ class PostgresDatabase(UserDatabaseInterface):
         with Session(self.engine) as session:
             try:
                 db_object: Optional[SQLModel] = session.get(model, entity_id)
+                if not db_object:
+                    raise EntityNotFoundError(model.__name__)
                 if db_object.usuario_id != current_user_id:
                     raise EntityNotFoundError(model.__name__)
-                if db_object:
-                    session.delete(db_object)
-                    session.commit()
-                else:
-                    raise EntityNotFoundError(model.__name__)
+                session.delete(db_object)
+                session.commit()
             except Exception as e:
                 session.rollback()
                 raise e

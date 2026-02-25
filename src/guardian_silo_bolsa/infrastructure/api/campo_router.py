@@ -33,13 +33,11 @@ def get_campos(case: GetCampos = Depends(get_user_case("get_all")), current_user
 
 @campo_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Campo)
 def create_campo(campo: CampoBase, case: CreateCampo = Depends(get_user_case("create")), current_user: Usuario = Depends(get_current_user)) -> Campo:
-    db_campo = Campo.model_validate(campo)
-    return case.execute(db_campo, current_user.id)
+    return case.execute(campo, current_user.id)
 
 @campo_router.put("/{campo_id}", status_code=status.HTTP_200_OK)
 def update_campo(campo_id: int, campo: CampoBase, case: UpdateCampo = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Campo:
-    db_campo = Campo.model_validate(campo)
-    return case.execute(campo_id, db_campo, current_user.id)
+    return case.execute(campo_id, campo, current_user.id)
 
 @campo_router.delete("/{campo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_campo(campo_id: int, case: DeleteCampo = Depends(get_user_case("delete")), current_user: Usuario = Depends(get_current_user)) -> None:

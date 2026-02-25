@@ -10,6 +10,7 @@ from ..database.deps import postgres_db
 from ...domain.models.models import Sensor, SensorBase
 from typing import List, Dict
 from ..security.deps import get_current_user
+from ...domain.models.models import Usuario
 
 def get_user_case(case_type: str):
     def _get_case():
@@ -23,24 +24,22 @@ def get_user_case(case_type: str):
 sensor_router = APIRouter(prefix="/sensors", tags=["sensors"], dependencies=[Depends(get_current_user)])
 
 @sensor_router.get("/{sensor_id}", response_model=Sensor)
-def get_sensor(sensor_id: int, service: GetSensor = Depends(get_user_case("get"))) -> Sensor:
-    return service.execute(sensor_id)
+def get_sensor(sensor_id: int, case: GetSensor = Depends(get_user_case("get")), current_user: Usuario = Depends(get_current_user)) -> Sensor:
+    return case.execute(sensor_id, current_user.id)
 
 @sensor_router.get("/", status_code=status.HTTP_200_OK, response_model=List[Sensor])
-def get_sensors(service: GetSensors = Depends(get_user_case("get_all"))) -> List[Sensor]:
-    return service.execute()
+def get_sensors(case: GetSensors = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Sensor]:
+    return case.execute(current_user.id)
 
 @sensor_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Sensor)
-def create_sensor(sensor: SensorBase, service: CreateSensor = Depends(get_user_case("create"))) -> Sensor:
-    db_sensor = Sensor.model_validate(sensor)
-    return service.execute(db_sensor)
+def create_sensor(sensor: SensorBase, case: CreateSensor = Depends(get_user_case("create")), current_user: Usuario = Depends(get_current_user)) -> Sensor:
+    return case.execute(sensor, current_user.id)
 
 @sensor_router.put("/{sensor_id}", status_code=status.HTTP_200_OK)
-def update_sensor(sensor_id: int, sensor: SensorBase, service: UpdateSensor = Depends(get_user_case("update"))) -> Sensor:
-    db_sensor = Sensor.model_validate(sensor)
-    return service.execute(sensor_id, db_sensor)
+def update_sensor(sensor_id: int, sensor: SensorBase, case: UpdateSensor = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Sensor:
+    return case.execute(sensor_id, sensor, current_user.id)
 
 @sensor_router.delete("/{sensor_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_sensor(sensor_id: int, service: DeleteSensor = Depends(get_user_case("delete"))) -> None:
-    service.execute(sensor_id)
+def delete_sensor(sensor_id: int, case: DeleteSensor = Depends(get_user_case("delete")), current_user: Usuario = Depends(get_current_user)) -> None:
+    case.execute(sensor_id, current_user.id)
 
