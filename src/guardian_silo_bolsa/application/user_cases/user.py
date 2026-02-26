@@ -1,7 +1,7 @@
 from ...domain.repository.database import UserDatabaseInterface
 from ...domain.models.models import Usuario, UsuarioBase, UsuarioValidation
 from typing import List, Optional
-from ...domain.exceptions.exceptions import InvalidCredentialsError
+from ...domain.exceptions.exceptions import InvalidCredentialsError, EntityAlreadyExistsError
 from ...domain.services.auth_interface import AuthServiceInterface
 
 
@@ -40,6 +40,10 @@ class UpdateUser:
         if current_user_id != user_id:
             raise InvalidCredentialsError("No tienes permisos para actualizar este usuario")
         model.password = self.auth_service.hash_password(model.password)
+        usuario_validation = UsuarioValidation(email=model.email, password=model.password)
+        duplicated_user = self.repo.get_user_by_email(usuario_validation)
+        if duplicated_user and duplicated_user.id != user_id:
+            raise EntityAlreadyExistsError(usuario_validation.email)
         db_user = self.repo.update_user(user_id, model)
         db_user.password = ""
         return db_user
@@ -81,6 +85,10 @@ class SignUpUser:
         # Hasheamos antes de mandar al repo
         user_in.password = self.auth_service.hash_password(user_in.password)
         user = Usuario.model_validate(user_in)
+        usuario_validation = UsuarioValidation(email=user_in.email, password=user_in.password)
+        duplicated_user = self.repo.get_user_by_email(usuario_validation)
+        if duplicated_user:
+            raise EntityAlreadyExistsError(usuario_validation.email)
         db_user = self.repo.create_user(user) 
         db_user.password = ""
         token = self.auth_service.create_token(data={"sub": str(db_user.id)})

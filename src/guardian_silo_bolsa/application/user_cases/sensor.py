@@ -25,7 +25,7 @@ class CreateSensor:
     
     def execute(self, sensor: SensorBase, current_user_id: int) -> Sensor:
         sensor = Sensor.model_validate(sensor, update={"usuario_id": current_user_id})
-        return self.repo.create_entity(current_user_id, sensor)
+        return self.repo.create_entity(sensor)
 
 class UpdateSensor:
     """ Caso de uso para actualizar un sensor """

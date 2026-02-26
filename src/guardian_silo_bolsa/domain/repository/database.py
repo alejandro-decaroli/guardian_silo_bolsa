@@ -73,7 +73,7 @@ class UserDatabaseInterface(DatabaseInterface):
         pass
 
     @abstractmethod
-    def create_entity(self, current_user_id: int, model: SQLModel) -> SQLModel:
+    def create_entity(self, model: SQLModel) -> SQLModel:
         """Crea una entidad."""
         pass
 

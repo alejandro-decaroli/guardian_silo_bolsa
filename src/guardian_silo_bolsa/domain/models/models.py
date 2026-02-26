@@ -63,6 +63,8 @@ class Lote(LoteBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id")
     usuario: Optional["Usuario"] = Relationship(back_populates="lotes")
+    campo_id: int | None = Field(default=None, foreign_key="campo.id")
+    campo: Optional["Campo"] = Relationship(back_populates="lotes")
     silobolsas: Optional[List[Silobolsa]] = Relationship(
         back_populates="lotes", 
         link_model=SilobolsaLoteLink
@@ -120,7 +122,8 @@ class Campo(CampoBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id")
     usuario: Optional[Usuario] = Relationship(back_populates="campos")
-    silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="campo")
+    silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="campo", cascade_delete=True)
+    lotes: Optional[List[Lote]] = Relationship(back_populates="campo", cascade_delete=True)
 
 
 class UsuarioBase(SQLModel):
@@ -140,11 +143,11 @@ class Usuario(UsuarioBase, table=True):
     """
     Tabla de usuario.
     """
-    id: int | None = Field(default=None, primary_key=True)
-    campos: Optional[List[Campo]] = Relationship(back_populates="usuario")
-    sensores: Optional[List[Sensor]] = Relationship(back_populates="usuario")
-    lotes: Optional[List[Lote]] = Relationship(back_populates="usuario")
-    silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="usuario")
+    id: int | None = Field(default=None, primary_key=True,)
+    campos: Optional[List[Campo]] = Relationship(back_populates="usuario", cascade_delete=True)
+    sensores: Optional[List[Sensor]] = Relationship(back_populates="usuario", cascade_delete=True)
+    lotes: Optional[List[Lote]] = Relationship(back_populates="usuario", cascade_delete=True)
+    silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="usuario", cascade_delete=True)
     role: str = Field(default="user")
 
 

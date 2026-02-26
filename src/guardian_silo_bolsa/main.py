@@ -32,7 +32,7 @@ app = FastAPI(
         debug=True,
         title="Guardián Silo Bolsa API",
         description="Sistema de monitoreo escalable para el agro",
-        version="1.7.0",
+        version="1.7.1",
         lifespan=lifespan
     )
 
@@ -68,30 +68,3 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
-'''
-
-7500 merceria y 2500 farmacia
-
-1ra FASE: interconectar
-
-TODO: 1) Implementar JWT para autenticacion [x]
-
-TODO: 2) Un Usuario debe poder crear campos y sensores. Para esto los routers de cada uno deben extraer un id de usuario del token y crearlos con ese id.
-
-Se deben modificar los casos de uso para que reciban el id de usuario, y modifica postgres para que los acepte y haga la operacion correspondiente.
-
-TODO: 3) Dentro de cada campo se deben poder crear silobolsas y lotes, para esto se les tiene que pasar el id del campo.
-
-TODO: 4) A travez del campo se debe poder acceder a un silo y asignarle uno o varios lotes o varios sensores, pasandole el id de silo
-
-2da FASE: lecturas
-
-TODO: 1) Implementar endpoint para que el sensor pueda enviar sus lecturas (agregar id de usuario).
-
-TODO: 2) Implementar endpoint para que el usuario pueda ver las lecturas de sus sensores.
-
-TODO: 3) Simular lecturas de sensores para probar el endpoint.
-
-TODO: 4) Crear frontend
-
-'''

@@ -159,7 +159,7 @@ class PostgresDatabase(UserDatabaseInterface):
                 session.rollback()
                 raise e
 
-    def create_entity(self, current_user_id: int, model: SQLModel) -> SQLModel:
+    def create_entity(self, model: SQLModel) -> SQLModel:
         """
         Crea una entidad.
         

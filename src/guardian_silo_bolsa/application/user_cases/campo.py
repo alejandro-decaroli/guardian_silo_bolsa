@@ -25,7 +25,7 @@ class CreateCampo:
     
     def execute(self, campo: CampoBase, current_user_id: int) -> Campo:
         campo = Campo.model_validate(campo, update={"usuario_id": current_user_id})
-        return self.repo.create_entity(current_user_id, campo)
+        return self.repo.create_entity(campo)
 
 class UpdateCampo:
     """ Caso de uso para actualizar un campo """
