@@ -10,7 +10,9 @@ from ...domain.models.models import (
     Campo,
     Usuario,
     UsuarioBase,
-    UsuarioValidation
+    UsuarioValidation,
+    SiloLoteData,
+    SilobolsaLoteLink
 )
 from ...domain.exceptions.exceptions import (
     EntityAsociatedError,
@@ -232,6 +234,29 @@ class PostgresDatabase(UserDatabaseInterface):
                     raise EntityNotFoundError(model.__name__)
                 session.delete(db_object)
                 session.commit()
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def setear_lote(self, current_user_id: int, data: SiloLoteData) -> SilobolsaLoteLink:
+        """
+        Setea el lote de un silo.
+        
+        Args:
+            data: Datos del silo y lote.
+        """
+        with Session(self.engine) as session:
+            try:
+                silo_lote = SilobolsaLoteLink(
+                    usuario_id=current_user_id,
+                    silobolsa_id=data.silobolsa_id,
+                    lote_id=data.lote_id,
+                    cantidad=data.cantidad
+                )
+                session.add(silo_lote)
+                session.commit()
+                session.refresh(silo_lote)
+                return silo_lote
             except Exception as e:
                 session.rollback()
                 raise e

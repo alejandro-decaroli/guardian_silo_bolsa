@@ -15,7 +15,7 @@ for route in router_list:
     main_router.include_router(route)
 
 
-@main_router.get("/", tags=["Home"])
+@main_router.get("/home", tags=["Home"])
 def root() -> JSONResponse:
     return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Bienvenido a Guardián silo bolsa"})
 

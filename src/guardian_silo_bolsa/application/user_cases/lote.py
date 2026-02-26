@@ -36,6 +36,9 @@ class UpdateLote:
     
     def execute(self, lote_id: int, model: LoteBase, current_user_id: int) -> Optional[Lote]:
         return self.repo.update_entity(current_user_id, lote_id, Lote, model)
+    
+    def update_cantidad_almacenada(self, lote_id: int, lote: Lote, current_user_id: int) -> None:
+        self.repo.update_entity(current_user_id, lote_id, Lote, lote)
 
 class DeleteLote:
     """ Caso de uso para eliminar un lote """

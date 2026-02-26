@@ -44,3 +44,10 @@ class InvalidCredentialsError(AppError):
     def __init__(self, message: str = "Credenciales inválidas."):
         code = status.HTTP_401_UNAUTHORIZED
         super().__init__(message, code)
+
+class InsufficientCapacityError(AppError):
+    """Excepción lanzada cuando el silo no tiene capacidad suficiente."""
+    def __init__(self, message: str = "El silo no tiene capacidad suficiente."):
+        code = status.HTTP_400_BAD_REQUEST
+        super().__init__(message, code)
+

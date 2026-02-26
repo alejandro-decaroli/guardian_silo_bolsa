@@ -7,10 +7,9 @@ from ...application.user_cases.campo import (
     DeleteCampo
 )
 from ..database.deps import postgres_db
-from ...domain.models.models import CampoBase, Campo
+from ...domain.models.models import CampoBase, Campo, Usuario
 from typing import List
 from ..security.deps import get_current_user
-from ...domain.models.models import Usuario
 
 def get_user_case(case_type: str):
     def _get_case():
@@ -31,15 +30,15 @@ def get_campo(campo_id: int, current_user: Usuario = Depends(get_current_user), 
 def get_campos(case: GetCampos = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Campo]:
     return case.execute(current_user.id)
 
-@campo_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Campo)
+@campo_router.post("/create", status_code=status.HTTP_201_CREATED, response_model=Campo)
 def create_campo(campo: CampoBase, case: CreateCampo = Depends(get_user_case("create")), current_user: Usuario = Depends(get_current_user)) -> Campo:
     return case.execute(campo, current_user.id)
 
-@campo_router.put("/{campo_id}", status_code=status.HTTP_200_OK)
+@campo_router.put("/update/{campo_id}", status_code=status.HTTP_200_OK)
 def update_campo(campo_id: int, campo: CampoBase, case: UpdateCampo = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Campo:
     return case.execute(campo_id, campo, current_user.id)
 
-@campo_router.delete("/{campo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@campo_router.delete("/delete/{campo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_campo(campo_id: int, case: DeleteCampo = Depends(get_user_case("delete")), current_user: Usuario = Depends(get_current_user)) -> None:
     case.execute(campo_id, current_user.id)
 
