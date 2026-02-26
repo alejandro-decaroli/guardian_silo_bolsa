@@ -55,6 +55,7 @@ class LoteBase(SQLModel):
     grano: Grano
     fecha_cosecha: datetime
     observaciones: str
+    campo_id: int
 
 class Lote(LoteBase, table=True):
     """
@@ -79,6 +80,7 @@ class SilobolsaBase(SQLModel):
     longitud: float
     observaciones: Optional[str]
     estado: EstadoSilobolsa
+    campo_id: int
 
 class Silobolsa(SilobolsaBase, table=True):
     """

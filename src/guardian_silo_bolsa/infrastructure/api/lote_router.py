@@ -32,8 +32,8 @@ def get_lotes(case: GetLotes = Depends(get_user_case("get_all")), current_user: 
     return case.execute(current_user.id)
 
 @lote_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Lote)
-def create_lote(campo_id: int, lote: LoteBase, case: CreateLote = Depends(get_user_case("create")), current_user: Usuario = Depends(get_current_user)) -> Lote:
-    return case.execute(campo_id, lote, current_user.id)
+def create_lote(lote: LoteBase, case: CreateLote = Depends(get_user_case("create")), current_user: Usuario = Depends(get_current_user)) -> Lote:
+    return case.execute(lote, current_user.id)
 
 @lote_router.put("/{lote_id}", status_code=status.HTTP_200_OK)
 def update_lote(lote_id: int, lote: LoteBase, case: UpdateLote = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Lote:

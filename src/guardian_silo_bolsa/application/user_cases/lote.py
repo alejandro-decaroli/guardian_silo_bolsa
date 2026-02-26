@@ -23,10 +23,10 @@ class CreateLote:
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
-    def execute(self, campo_id: int, lote: LoteBase, current_user_id: int) -> Lote:
+    def execute(self, lote: LoteBase, current_user_id: int) -> Lote:
         # el get entity valida que el campo pertenece al usuario
-        campo = self.repo.get_entity(current_user_id, campo_id, Campo)
-        lote = Lote.model_validate(lote, update={"usuario_id": current_user_id, "campo_id": campo_id})
+        campo = self.repo.get_entity(current_user_id, lote.campo_id, Campo)
+        lote = Lote.model_validate(lote, update={"usuario_id": current_user_id, "campo_id": lote.campo_id})
         return self.repo.create_entity(lote)
 
 class UpdateLote:
