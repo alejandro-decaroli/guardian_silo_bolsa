@@ -94,7 +94,7 @@ class Lote(LoteBase, table=True):
     """
     id: int | None = Field(default=None, primary_key=True)
     estado: str = Field(default="ACTIVO", sa_column=Column(String(20), nullable=False))
-    usuario_id: int = Field(foreign_key="usuario.id")
+    usuario_id: int = Field(foreign_key="usuario.id", ondelete="CASCADE")
     usuario: Optional["Usuario"] = Relationship(back_populates="lotes")
     campo_id: int | None = Field(default=None, foreign_key="campo.id")
     campo: Optional["Campo"] = Relationship(back_populates="lotes")
@@ -126,7 +126,7 @@ class Silobolsa(SilobolsaBase, table=True):
     """
     id: int | None = Field(default=None, primary_key=True)
     campo_id: int | None = Field(default=None, foreign_key="campo.id")
-    usuario_id: int = Field(foreign_key="usuario.id")
+    usuario_id: int = Field(foreign_key="usuario.id", ondelete="CASCADE")
     usuario: Optional[Usuario] = Relationship(back_populates="silobolsas")   
     lotes_links: List[SilobolsaLoteLink] = Relationship(back_populates="silobolsa")
     sensor_links: List[SilobolsaSensorLink] = Relationship(back_populates="silobolsa")
@@ -182,7 +182,7 @@ class Campo(CampoBase, table=True):
     Tabla de campo.
     """
     id: int | None = Field(default=None, primary_key=True)
-    usuario_id: int = Field(foreign_key="usuario.id")
+    usuario_id: int = Field(foreign_key="usuario.id", ondelete="CASCADE")
     usuario: Optional[Usuario] = Relationship(back_populates="campos")
     silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="campo", cascade_delete=True)
     lotes: Optional[List[Lote]] = Relationship(back_populates="campo", cascade_delete=True)
@@ -206,12 +206,12 @@ class Usuario(UsuarioBase, table=True):
     Tabla de usuario.
     """
     id: int | None = Field(default=None, primary_key=True,)
-    campos: Optional[List[Campo]] = Relationship(back_populates="usuario", cascade_delete=True)
-    sensores: Optional[List[Sensor]] = Relationship(back_populates="usuario", cascade_delete=True)
-    lotes: Optional[List[Lote]] = Relationship(back_populates="usuario", cascade_delete=True)
-    silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="usuario", cascade_delete=True)
-    silobolsa_lotes: Optional[List[SilobolsaLoteLink]] = Relationship(back_populates="usuario")
-    silobolsa_sensores: Optional[List[SilobolsaSensorLink]] = Relationship(back_populates="usuario")
+    campos: Optional[List[Campo]] = Relationship(back_populates="usuario", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    sensores: Optional[List[Sensor]] = Relationship(back_populates="usuario", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    lotes: Optional[List[Lote]] = Relationship(back_populates="usuario", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="usuario", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    silobolsa_lotes: Optional[List[SilobolsaLoteLink]] = Relationship(back_populates="usuario", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    silobolsa_sensores: Optional[List[SilobolsaSensorLink]] = Relationship(back_populates="usuario", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
     role: str = Field(default="user")
 
 
