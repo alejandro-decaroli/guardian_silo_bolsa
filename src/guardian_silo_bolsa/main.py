@@ -32,7 +32,7 @@ app = FastAPI(
         debug=True,
         title="Guardián Silo Bolsa API",
         description="Sistema de monitoreo escalable para el agro",
-        version="1.8.0",
+        version="1.9.1",
         lifespan=lifespan
     )
 

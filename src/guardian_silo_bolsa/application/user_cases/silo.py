@@ -1,7 +1,17 @@
 from ...domain.repository.database import UserDatabaseInterface
-from ...domain.models.models import Silobolsa, SilobolsaBase, Campo, SiloLoteData, Lote, SilobolsaLoteLink
+from ...domain.models.models import (
+    Silobolsa, 
+    SilobolsaBase, 
+    Campo, 
+    SiloLoteData, 
+    Lote, 
+    SilobolsaLoteLink, 
+    SiloSensorData, 
+    Sensor,
+    SilobolsaSensorLink
+)
 from typing import List, Optional
-from ...domain.exceptions.exceptions import InsufficientCapacityError
+from ...domain.exceptions.exceptions import InsufficientCapacityError, EntityAsociatedError
 from .lote import UpdateLote
 
 
@@ -41,6 +51,9 @@ class UpdateSilo:
 
     def update_peso_actual(self, silo_id: int, silo: Silobolsa, current_user_id: int) -> None:
         self.repo.update_entity(current_user_id, silo_id, Silobolsa, silo)
+    
+    def update_sensor_id(self, silo_id: int, silo: Silobolsa, current_user_id: int) -> None:
+        self.repo.update_entity(current_user_id, silo_id, Silobolsa, silo)
 
 class DeleteSilo:
     """ Caso de uso para eliminar un silo """
@@ -50,22 +63,43 @@ class DeleteSilo:
     def execute(self, silo_id: int, current_user_id: int) -> None:
         self.repo.delete_entity(current_user_id, silo_id, Silobolsa)
 
+
 class SetearLote:
     """ Caso de uso para setear el lote de un silo """
     def __init__(self, repo: UserDatabaseInterface):
         self.repo = repo
     
     def execute(self, data: SiloLoteData, current_user_id: int) -> SilobolsaLoteLink:
-        silo = self.repo.get_entity(current_user_id, data.silobolsa_id, Silobolsa)
-        lote = self.repo.get_entity(current_user_id, data.lote_id, Lote)
-        if lote.cantidad_almacenada == 0:
-            raise InsufficientCapacityError("El lote no tiene suficiente cantidad. Cantidad disponible: {}, cantidad a agregar: {}".format(lote.cantidad_almacenada, data.cantidad))
-        if lote.cantidad_almacenada < data.cantidad:
-            raise InsufficientCapacityError("El lote no tiene suficiente cantidad. Cantidad disponible: {}, cantidad a agregar: {}".format(lote.cantidad_almacenada, data.cantidad))
+        silo: Silobolsa = self.repo.get_silo_and_lotes(current_user_id, data.silobolsa_id)
+        lote: Lote = self.repo.get_lote_and_silos(current_user_id, data.lote_id)
+        if lote.cantidad_cosechada - lote.cosecha_almacenada < data.cantidad:
+            raise InsufficientCapacityError("El lote no tiene suficiente cantidad. Cantidad disponible: {}, cantidad a agregar: {}".format(lote.cantidad_cosechada - lote.cosecha_almacenada, data.cantidad))
         if silo.capacidad_max - silo.peso_actual < data.cantidad:
             raise InsufficientCapacityError("El silo no tiene capacidad suficiente. Capacidad máxima: {}, peso actual: {}, cantidad a agregar: {}".format(silo.capacidad_max, silo.peso_actual, data.cantidad))
-        lote.cantidad_almacenada -= data.cantidad
-        silo.peso_actual += data.cantidad
-        UpdateLote(self.repo).update_cantidad_almacenada(data.lote_id, lote, current_user_id)
-        UpdateSilo(self.repo).update_peso_actual(silo.id, silo, current_user_id)
         return self.repo.setear_lote(current_user_id, data)
+
+
+class SetearSensor:
+    """ Caso de uso para setear el sensor de un silo """
+    def __init__(self, repo: UserDatabaseInterface):
+        self.repo = repo
+    
+    def execute(self, data: SiloSensorData, current_user_id: int) -> SilobolsaSensorLink:
+        silo = self.repo.get_silo_and_sensor(current_user_id, data.silobolsa_id)
+        sensor = self.repo.get_entity(current_user_id, data.sensor_id, Sensor)
+        for silo_sensor in silo.sensor_links:
+            if silo_sensor.sensor_id == sensor.id and silo_sensor.estado == "ACTIVO":
+                raise EntityAsociatedError("El silo ya tiene este sensor asignado")
+        return self.repo.setear_sensor(current_user_id, data)
+
+        
+class VaciarSilo:
+    """ Caso de uso para vaciar un silo """
+    def __init__(self, repo: UserDatabaseInterface):
+        self.repo = repo
+    
+    def execute(self, silo_id: int, current_user_id: int) -> None:
+        silo: Silobolsa = self.repo.get_silo_and_lotes(current_user_id, silo_id)
+        silo.vaciar()
+        UpdateSilo(self.repo).execute(silo.id, silo, current_user_id)
+      

@@ -5,10 +5,20 @@ from ...application.user_cases.silo import (
     GetSilos, 
     UpdateSilo, 
     DeleteSilo,
-    SetearLote
+    SetearLote,
+    SetearSensor,
+    VaciarSilo
 )
 from ..database.deps import postgres_db
-from ...domain.models.models import Silobolsa, SilobolsaBase, Usuario, SiloLoteData, SilobolsaLoteLink
+from ...domain.models.models import (
+    Silobolsa, 
+    SilobolsaBase, 
+    Usuario, 
+    SiloLoteData, 
+    SilobolsaLoteLink,
+    SiloSensorData,
+    SilobolsaSensorLink
+)
 from typing import List
 from ..security.deps import get_current_user
 
@@ -20,6 +30,8 @@ def get_user_case(case_type: str):
         if case_type == "update": return UpdateSilo(postgres_db)
         if case_type == "delete": return DeleteSilo(postgres_db)
         if case_type == "setear_lote": return SetearLote(postgres_db)
+        if case_type == "setear_sensor": return SetearSensor(postgres_db)
+        if case_type == "vaciar": return VaciarSilo(postgres_db)
     return _get_case
 
 silo_router = APIRouter(prefix="/silos", tags=["silos"], dependencies=[Depends(get_current_user)])
@@ -47,3 +59,12 @@ def delete_silo(silo_id: int, case: DeleteSilo = Depends(get_user_case("delete")
 @silo_router.post("/setear-lote", status_code=status.HTTP_201_CREATED, response_model=SilobolsaLoteLink)
 def setear_lote(data: SiloLoteData, case: SetearLote = Depends(get_user_case("setear_lote")), current_user: Usuario = Depends(get_current_user)) -> SilobolsaLoteLink:
     return case.execute(data, current_user.id)
+
+@silo_router.post("/setear-sensor", status_code=status.HTTP_201_CREATED, response_model=SilobolsaSensorLink)
+def setear_sensor(data: SiloSensorData, case: SetearSensor = Depends(get_user_case("setear_sensor")), current_user: Usuario = Depends(get_current_user)) -> SilobolsaSensorLink:
+    return case.execute(data, current_user.id)
+
+@silo_router.put("/vaciar-silo", status_code=status.HTTP_200_OK, response_model=str)
+def vaciar_silo(silo_id: int, case: VaciarSilo = Depends(get_user_case("vaciar")), current_user: Usuario = Depends(get_current_user)) -> str:
+    case.execute(silo_id, current_user.id)
+    return "Silo vaciado con éxito"

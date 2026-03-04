@@ -1,3 +1,4 @@
+from sqlalchemy.orm import selectinload
 from sqlmodel import create_engine, Session, SQLModel, select, text
 from dotenv import load_dotenv
 from typing import Optional, List, Any, Type
@@ -12,7 +13,9 @@ from ...domain.models.models import (
     UsuarioBase,
     UsuarioValidation,
     SiloLoteData,
-    SilobolsaLoteLink
+    SilobolsaLoteLink,
+    SilobolsaSensorLink,
+    SiloSensorData
 )
 from ...domain.exceptions.exceptions import (
     EntityAsociatedError,
@@ -232,7 +235,12 @@ class PostgresDatabase(UserDatabaseInterface):
                     raise EntityNotFoundError(model.__name__)
                 if db_object.usuario_id != current_user_id:
                     raise EntityNotFoundError(model.__name__)
-                session.delete(db_object)
+                if type(db_object) != Usuario:
+                    db_object.estado = "INACTIVO"
+                    session.add(db_object)
+                    session.refresh(db_object)
+                else:
+                    session.delete(db_object)
                 session.commit()
             except Exception as e:
                 session.rollback()
@@ -257,6 +265,91 @@ class PostgresDatabase(UserDatabaseInterface):
                 session.commit()
                 session.refresh(silo_lote)
                 return silo_lote
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def setear_sensor(self, current_user_id: int, data: SiloSensorData) -> SilobolsaSensorLink:
+        """
+        Setea el sensor de un silo.
+        
+        Args:
+            data: Datos del silo y sensor.
+        """
+        with Session(self.engine) as session:
+            try:
+                silo_sensor = SilobolsaSensorLink(
+                    usuario_id=current_user_id,
+                    silobolsa_id=data.silobolsa_id,
+                    sensor_id=data.sensor_id
+                )
+                session.add(silo_sensor)
+                session.commit()
+                session.refresh(silo_sensor)
+                return silo_sensor
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def get_silo_and_sensor(self, current_user_id: int, entity_id: int) -> Silobolsa:
+        """
+        Obtiene un silo y su sensor.
+        
+        Args:
+            entity_id: ID del silo.
+        """
+        with Session(self.engine) as session:
+            try:
+                statement = select(Silobolsa).where(Silobolsa.id == entity_id).options(selectinload(Silobolsa.sensor_links))
+                result = session.exec(statement)
+                if not result:
+                    raise EntityNotFoundError("Silobolsa")
+                silobolsa = result.one()
+                if silobolsa.usuario_id != current_user_id:
+                    raise EntityNotFoundError("Silobolsa")
+                return silobolsa
+            except Exception as e:
+                session.rollback()
+                raise e
+    
+    def get_silo_and_lotes(self, current_user_id: int, entity_id: int) -> Silobolsa:
+        """
+        Obtiene un silo y sus lotes.
+        
+        Args:
+            entity_id: ID del silo.
+        """
+        with Session(self.engine) as session:
+            try:
+                statement = select(Silobolsa).where(Silobolsa.id == entity_id).options(selectinload(Silobolsa.lotes_links))
+                result = session.exec(statement)
+                if not result:
+                    raise EntityNotFoundError("Silobolsa")
+                silobolsa = result.one()
+                if silobolsa.usuario_id != current_user_id:
+                    raise EntityNotFoundError("Silobolsa")
+                return silobolsa
+            except Exception as e:
+                session.rollback()
+                raise e
+    
+    def get_lote_and_silos(self, current_user_id: int, entity_id: int) -> Lote:
+        """
+        Obtiene un lote y sus silos.
+        
+        Args:
+            entity_id: ID del lote.
+        """
+        with Session(self.engine) as session:
+            try:
+                statement = select(Lote).where(Lote.id == entity_id).options(selectinload(Lote.silobolsas_links))
+                result = session.exec(statement)
+                if not result:
+                    raise EntityNotFoundError("Lote")
+                lote = result.one()
+                if lote.usuario_id != current_user_id:
+                    raise EntityNotFoundError("Lote")
+                return lote
             except Exception as e:
                 session.rollback()
                 raise e

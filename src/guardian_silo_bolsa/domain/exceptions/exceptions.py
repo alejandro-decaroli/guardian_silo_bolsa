@@ -24,9 +24,7 @@ class EntityNotFoundError(AppError):
 
 class EntityAsociatedError(AppError):
     """Excepción lanzada cuando se intenta eliminar una entidad que tiene asociaciones."""
-    def __init__(self, entity_name: str):
-        entity_name = entity_name
-        message = f"La entidad {entity_name} tiene asociaciones y no se puede eliminar."
+    def __init__(self, message: str):
         code = status.HTTP_409_CONFLICT
         super().__init__(message, code)
 

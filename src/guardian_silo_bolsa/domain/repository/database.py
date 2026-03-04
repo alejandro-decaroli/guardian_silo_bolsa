@@ -1,6 +1,16 @@
 from abc import ABC, abstractmethod
 from typing import List, Any, Optional, Type
-from ..models.models import Usuario, UsuarioValidation, UsuarioBase
+from ..models.models import (
+    SilobolsaLoteLink,
+    SilobolsaSensorLink,
+    Usuario, 
+    UsuarioValidation, 
+    UsuarioBase, 
+    Silobolsa, 
+    SiloLoteData,
+    Lote,
+    SiloSensorData
+)
 from sqlmodel import SQLModel
 
 class DatabaseInterface(ABC):
@@ -85,6 +95,31 @@ class UserDatabaseInterface(DatabaseInterface):
     @abstractmethod
     def delete_entity(self, current_user_id: int, entity_id: int, model: Type[SQLModel]) -> None:
         """Elimina una entidad."""
+        pass
+
+    @abstractmethod
+    def get_silo_and_lotes(self, current_user_id: int, entity_id: int) -> Silobolsa:
+        """Obtiene un silo y sus lotes."""
+        pass
+    
+    @abstractmethod
+    def setear_lote(self, current_user_id: int, data: SiloLoteData) -> SilobolsaLoteLink:
+        """Setea el lote de un silo."""
+        pass
+
+    @abstractmethod
+    def get_lote_and_silos(self, current_user_id: int, entity_id: int) -> Lote:
+        """Obtiene un lote y sus silos."""
+        pass
+
+    @abstractmethod
+    def setear_sensor(self, current_user_id: int, data: SiloSensorData) -> SilobolsaSensorLink:
+        """Setea el sensor de un silo."""
+        pass
+
+    @abstractmethod
+    def get_silo_and_sensor(self, current_user_id: int, entity_id: int) -> Silobolsa:
+        """Obtiene un silo y su sensor."""
         pass
 
 class SensorDatabaseInterface(DatabaseInterface):
