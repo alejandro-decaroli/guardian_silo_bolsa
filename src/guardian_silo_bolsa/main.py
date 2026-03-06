@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse
 from .domain.exceptions.exceptions import AppError
 from .infrastructure.database.deps import postgres_db
-from .create_admin import create_admin
+from .simulator_v2 import create_sintetic_data
 from .infrastructure.security.auth_handler import AuthService
 
 load_dotenv()
@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     postgres_db.connect()
     postgres_db.create_db_and_tables()
 
-    create_admin(postgres_db, AuthService())
+    create_sintetic_data(postgres_db, AuthService())
     
     yield 
     
@@ -30,7 +30,7 @@ app = FastAPI(
         debug=True,
         title="Guardián Silo Bolsa API",
         description="Sistema de monitoreo escalable para el agro",
-        version="1.9.2",
+        version="1.11.1",
         lifespan=lifespan
     )
 

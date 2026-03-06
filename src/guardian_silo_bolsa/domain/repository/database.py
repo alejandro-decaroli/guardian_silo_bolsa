@@ -9,7 +9,8 @@ from ..models.models import (
     Silobolsa, 
     SiloLoteData,
     Lote,
-    SiloSensorData
+    SiloSensorData,
+    Sensor
 )
 from sqlmodel import SQLModel
 
@@ -43,7 +44,12 @@ class UserDatabaseInterface(DatabaseInterface):
     """Interfaz para la base de datos de usuarios. Encargada de manejar todos los datos relacionados con los usuarios."""
 
     @abstractmethod
-    def get_user_by_email(self, usuario_data: UsuarioValidation) -> Optional[Usuario]:
+    def get_by_handshake(self, mac_address: str) -> Sensor:
+        """Obtiene un sensor por su dirección MAC."""
+        pass
+
+    @abstractmethod
+    def get_user_by_email(self, usuario_data: UsuarioValidation) -> Usuario:
         """Obtiene un usuario por su email."""
         pass
 

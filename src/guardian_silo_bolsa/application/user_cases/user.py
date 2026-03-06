@@ -70,7 +70,7 @@ class LoginUser:
         if not user or not self.auth_service.verify_password(usuario_validation.password, user.password):
             raise InvalidCredentialsError() 
 
-        token = self.auth_service.create_token(data={"sub": str(user.id)})
+        token = self.auth_service.create_token(data={"sub": str(user.id)}, sensor=False)
     
         user.password = ""
         return token, user
@@ -91,5 +91,5 @@ class SignUpUser:
             raise EntityAlreadyExistsError(usuario_validation.email)
         db_user = self.repo.create_user(user) 
         db_user.password = ""
-        token = self.auth_service.create_token(data={"sub": str(db_user.id)})
+        token = self.auth_service.create_token(data={"sub": str(db_user.id)}, sensor=False)
         return token, db_user

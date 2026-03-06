@@ -68,3 +68,5 @@ def setear_sensor(data: SiloSensorData, case: SetearSensor = Depends(get_user_ca
 def vaciar_silo(silo_id: int, case: VaciarSilo = Depends(get_user_case("vaciar")), current_user: Usuario = Depends(get_current_user)) -> str:
     case.execute(silo_id, current_user.id)
     return "Silo vaciado con éxito"
+
+    

@@ -73,9 +73,11 @@ class SetearLote:
         silo: Silobolsa = self.repo.get_silo_and_lotes(current_user_id, data.silobolsa_id)
         lote: Lote = self.repo.get_lote_and_silos(current_user_id, data.lote_id)
         if lote.cantidad_cosechada - lote.cosecha_almacenada < data.cantidad:
-            raise InsufficientCapacityError("El lote no tiene suficiente cantidad. Cantidad disponible: {}, cantidad a agregar: {}".format(lote.cantidad_cosechada - lote.cosecha_almacenada, data.cantidad))
+            raise InsufficientCapacityError("Ya se almaceno la totalidad de la cosecha del lote. Cantidad disponible: {}, cantidad a agregar: {}".format(lote.cantidad_cosechada - lote.cosecha_almacenada, data.cantidad))
         if silo.capacidad_max - silo.peso_actual < data.cantidad:
             raise InsufficientCapacityError("El silo no tiene capacidad suficiente. Capacidad máxima: {}, peso actual: {}, cantidad a agregar: {}".format(silo.capacidad_max, silo.peso_actual, data.cantidad))
+        silo.llenar()
+        self.repo.update_entity(current_user_id, silo.id, Silobolsa, silo)
         return self.repo.setear_lote(current_user_id, data)
 
 

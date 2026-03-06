@@ -1,4 +1,4 @@
-from pydantic import EmailStr, PositiveFloat, PositiveInt
+from pydantic import EmailStr, PositiveFloat
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -27,22 +27,24 @@ class Grano(Enum):
     GIRASOL = "GIRASOL"
     ARROZ = "ARROZ"
 
-class SensorBase(SQLModel):
-    """Base para la tabla de sensor."""
-    modelo: str
-    estado: EstadoSensor
-
 class SiloSensorData(SQLModel):
     """Datos para la relación entre silo y sensor"""
     silobolsa_id: int
     sensor_id: int
     fecha_instalacion: datetime = Field(default_factory=datetime.now)
 
+class SensorBase(SQLModel):
+    """Base para la tabla de sensor."""
+    modelo: str
+    estado: EstadoSensor
+    mac_address: str = Field(unique=True, index=True) 
+
 class Sensor(SensorBase, table=True):
     """
     Tabla de sensor.
     """
     id: int | None = Field(default=None, primary_key=True)
+    api_key: Optional[str] = Field(default=None)
     usuario_id: int = Field(foreign_key="usuario.id")
     usuario: Optional["Usuario"] = Relationship(back_populates="sensores")
     silobolsa_links: List[SilobolsaSensorLink] = Relationship(back_populates="sensor")

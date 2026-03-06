@@ -26,19 +26,19 @@ class AuthService(AuthServiceInterface):
         """Verifica si la contraseña coincide con el hash almacenado."""
         return self.pwd_context.verify(plain_password, hashed_password)
 
-    def create_token(self, data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    def create_token(self, data: dict, sensor: bool, expires_delta: Optional[timedelta] = None) -> str:
         """
         Crea un token JWT firmado.
         El 'sub' (subject) del data debería ser el ID del usuario.
         """
         to_encode = data.copy()
+        if not sensor:
+            if expires_delta:
+                expire = datetime.now(timezone.utc) + expires_delta
+            else:
+                expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         
-        if expires_delta:
-            expire = datetime.now(timezone.utc) + expires_delta
-        else:
-            expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        
-        to_encode.update({"exp": expire})
+            to_encode.update({"exp": expire})
         
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt

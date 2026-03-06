@@ -235,10 +235,9 @@ class PostgresDatabase(UserDatabaseInterface):
                     raise EntityNotFoundError(model.__name__)
                 if db_object.usuario_id != current_user_id:
                     raise EntityNotFoundError(model.__name__)
-                if type(db_object) != Usuario:
+                if not isinstance(db_object, Usuario):
                     db_object.estado = "INACTIVO"
                     session.add(db_object)
-                    session.refresh(db_object)
                 else:
                     session.delete(db_object)
                 session.commit()
@@ -301,13 +300,12 @@ class PostgresDatabase(UserDatabaseInterface):
         with Session(self.engine) as session:
             try:
                 statement = select(Silobolsa).where(Silobolsa.id == entity_id).options(selectinload(Silobolsa.sensor_links))
-                result = session.exec(statement)
+                result = session.exec(statement).first()
                 if not result:
                     raise EntityNotFoundError("Silobolsa")
-                silobolsa = result.one()
-                if silobolsa.usuario_id != current_user_id:
+                if result.usuario_id != current_user_id:
                     raise EntityNotFoundError("Silobolsa")
-                return silobolsa
+                return result
             except Exception as e:
                 session.rollback()
                 raise e
@@ -322,13 +320,12 @@ class PostgresDatabase(UserDatabaseInterface):
         with Session(self.engine) as session:
             try:
                 statement = select(Silobolsa).where(Silobolsa.id == entity_id).options(selectinload(Silobolsa.lotes_links))
-                result = session.exec(statement)
+                result = session.exec(statement).first()
                 if not result:
                     raise EntityNotFoundError("Silobolsa")
-                silobolsa = result.one()
-                if silobolsa.usuario_id != current_user_id:
+                if result.usuario_id != current_user_id:
                     raise EntityNotFoundError("Silobolsa")
-                return silobolsa
+                return result
             except Exception as e:
                 session.rollback()
                 raise e
@@ -343,13 +340,25 @@ class PostgresDatabase(UserDatabaseInterface):
         with Session(self.engine) as session:
             try:
                 statement = select(Lote).where(Lote.id == entity_id).options(selectinload(Lote.silobolsas_links))
-                result = session.exec(statement)
+                result = session.exec(statement).first()
                 if not result:
                     raise EntityNotFoundError("Lote")
-                lote = result.one()
-                if lote.usuario_id != current_user_id:
+                if result.usuario_id != current_user_id:
                     raise EntityNotFoundError("Lote")
-                return lote
+                return result
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def get_by_handshake(self, mac_address: str) -> Sensor:
+        """Obtiene un sensor por su Mac address"""
+        with Session(self.engine) as session:
+            try:
+                statement = select(Sensor).where(Sensor.mac_address == mac_address)
+                result = session.exec(statement).first()
+                if not result:
+                    raise EntityNotFoundError("Sensor")
+                return result
             except Exception as e:
                 session.rollback()
                 raise e
