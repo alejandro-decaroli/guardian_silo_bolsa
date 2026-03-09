@@ -5,6 +5,18 @@ from enum import Enum
 from sqlmodel import Field, SQLModel, Relationship, Column
 from sqlalchemy import String
 
+class TelemetrySchema(SQLModel):
+    """Esquema para los datos de telemetría."""
+    co2: Optional[float] = None
+    hum: Optional[float] = None
+    temp: Optional[float] = None
+    timestamp: datetime = Field(default_factory=datetime.now)
+    api_key: str
+
+class Mac_Address(SQLModel):
+    """Dirección MAC del sensor."""
+    mac_address: str
+
 class EstadoSilobolsa(Enum):
     """Estado del silobolsa."""
     VACIO = "VACIO"

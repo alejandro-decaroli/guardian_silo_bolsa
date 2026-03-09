@@ -1,13 +1,13 @@
-from ...domain.repository.database import UserDatabaseInterface
+from ...domain.repository.database import IUserDatabase
 from ...domain.models.models import Usuario, UsuarioBase, UsuarioValidation
 from typing import List, Optional
 from ...domain.exceptions.exceptions import InvalidCredentialsError, EntityAlreadyExistsError
-from ...domain.services.auth_interface import AuthServiceInterface
+from ...domain.services.auth_interface import IAuthService
 
 
 class GetUser:
     """ Caso de uso para obtener un usuario """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, user_id: int, role: str) -> Usuario:
@@ -19,7 +19,7 @@ class GetUser:
 
 class GetUsers:
     """ Caso de uso para obtener todos los usuarios """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, role: str) -> Optional[List[Usuario]]:
@@ -32,7 +32,7 @@ class GetUsers:
 
 class UpdateUser:
     """ Caso de uso para actualizar un usuario """
-    def __init__(self, repo: UserDatabaseInterface, auth_service: AuthServiceInterface):
+    def __init__(self, repo: IUserDatabase, auth_service: IAuthService):
         self.repo = repo
         self.auth_service = auth_service
     
@@ -50,7 +50,7 @@ class UpdateUser:
 
 class DeleteUser:
     """ Caso de uso para eliminar un usuario """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, user_id: int, current_user_id: int) -> None:
@@ -60,7 +60,7 @@ class DeleteUser:
 
 class LoginUser:
     """ Caso de uso para iniciar sesión """
-    def __init__(self, repo: UserDatabaseInterface, auth_service: AuthServiceInterface):
+    def __init__(self, repo: IUserDatabase, auth_service: IAuthService):
         self.repo = repo
         self.auth_service = auth_service
 
@@ -77,7 +77,7 @@ class LoginUser:
 
 class SignUpUser:
     """ Caso de uso para registrar un usuario """
-    def __init__(self, repo: UserDatabaseInterface, auth_service: AuthServiceInterface):
+    def __init__(self, repo: IUserDatabase, auth_service: IAuthService):
         self.repo = repo
         self.auth_service = auth_service
     

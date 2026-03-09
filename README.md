@@ -63,20 +63,37 @@ Para correr este proyecto es necesario tener las siguientes variables de ambient
 
 
 ```env
-INFLUX_TOKEN=
+# --- INFLUXDB ---
+# Obtener el token desde la UI de InfluxDB
+INFLUX_TOKEN=tu_token_aqui
 INFLUX_HOST=http://influxdb3-core:8181
 INFLUX_DATABASE=guardian_db
-API_URL=http://guardian_api:8000/ingest
-CSV_PATH=backups/data_backup.csv
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
+
+# --- API & BACKEND ---
+INGEST_API_URL=http://guardian_api:8000/api/v1/ingest
+HANDSHAKE_API_URL=http://guardian_api:8000/api/v1/sensors/handshake
+BACKEND_PORT=8000
+BACKEND_HOST=0.0.0.0
+
+# --- DATABASE (POSTGRES) ---
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres 
+POSTGRES_PASSWORD=password_seguro
 POSTGRES_DB=guardian_db
 POSTGRES_HOST=postgres_guardian
 POSTGRES_PORT=5432
-BACKEND_PORT=8000
-BACKEND_HOST=0.0.0.0
+
+# --- SEGURIDAD ---
+# Generar una clave larga y aleatoria
+SECRET_KEY=clave_secreta_para_desarrollo
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+# --- NOTIFICACIONES (TELEGRAM) ---
+TELEGRAM_BOT_TOKEN=token_del_bot
+TELEGRAM_CHAT_ID=tu_id_de_chat
+
+# --- OTROS ---
+CSV_PATH=backups/data_backup.csv
 ```
 
 
@@ -152,6 +169,7 @@ docker compose up -d grafana
 docker compose up -d influxdb3-explorer
 ```
 
+Pueden acceder a la API con la UI de swagger en http://localhost:8000/docs, desde aqui podran hacer diferentes operaciones con las entidades.
 Con todos los contenedores funcionando, pueden ir a http://localhost:3000 para visualizar los datos en Grafana. El usuario y la contraseña son: admin.
 Para crear los dashboards de grafana se recomienda que vean los respectivos tutoriales, los screenshot de este proyecto son solo a modo de ilustración.\
 Si levantaron el explorador de influxdb3 pueden ir a  http://localhost:8888

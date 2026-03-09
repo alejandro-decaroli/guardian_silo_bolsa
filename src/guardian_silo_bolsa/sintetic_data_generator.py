@@ -18,12 +18,10 @@ from .domain.models.models import (
     EstadoSensor,
     EstadoSilobolsa
     )
-from .domain.repository.database import UserDatabaseInterface
-from .domain.services.auth_interface import AuthServiceInterface
-import datetime
+from .domain.repository.database import IUserDatabase
+from .domain.services.auth_interface import IAuthService
 
-
-def create_user(db: UserDatabaseInterface, auth_service: AuthServiceInterface) -> bool:
+def create_user(db: IUserDatabase, auth_service: IAuthService) -> bool:
     """
     Crea un usuario admin si no existe
     """
@@ -45,7 +43,7 @@ def create_user(db: UserDatabaseInterface, auth_service: AuthServiceInterface) -
     return False
 
 
-def create_campo(db: UserDatabaseInterface) -> None:
+def create_campo(db: IUserDatabase) -> None:
     """
     Crea un campo para el usuario admin
     """
@@ -59,7 +57,7 @@ def create_campo(db: UserDatabaseInterface) -> None:
     db.create_entity(db_campo)
 
 
-def create_sensores(db: UserDatabaseInterface, auth_service: AuthServiceInterface) -> None:
+def create_sensores(db: IUserDatabase, auth_service: IAuthService) -> None:
     """
     Crea sensores para el campo
     """
@@ -104,7 +102,7 @@ def create_sensores(db: UserDatabaseInterface, auth_service: AuthServiceInterfac
         db_sensor.api_key = api_key
         db.update_entity(1, db_sensor.id, Sensor, db_sensor)
 
-def create_silobolsa(db: UserDatabaseInterface) -> None:
+def create_silobolsa(db: IUserDatabase) -> None:
     """
     Crea silobolsas para el campo
     """
@@ -170,7 +168,7 @@ def create_silobolsa(db: UserDatabaseInterface) -> None:
         db.create_entity(db_silobolsa)
 
 
-def create_lote(db: UserDatabaseInterface) -> None:
+def create_lote(db: IUserDatabase) -> None:
     """
     Crea un lote para el campo
     """
@@ -186,7 +184,7 @@ def create_lote(db: UserDatabaseInterface) -> None:
     db_lote = Lote.model_validate(lote, update={"usuario_id": 1})
     db.create_entity(db_lote)
 
-def create_silo_lote(db: UserDatabaseInterface) -> None:
+def create_silo_lote(db: IUserDatabase) -> None:
     """
     Crea asignaciones de silobolsas a lotes
     """
@@ -229,7 +227,7 @@ def create_silo_lote(db: UserDatabaseInterface) -> None:
         db.create_entity(db_silo_lote)
 
 
-def create_silo_sensor(db: UserDatabaseInterface) -> None:
+def create_silo_sensor(db: IUserDatabase) -> None:
     """
     Crea asignaciones de silobolsas a sensores
     """
@@ -267,7 +265,7 @@ def create_silo_sensor(db: UserDatabaseInterface) -> None:
         db.create_entity(db_silo_sensor)
 
 
-def create_sintetic_data(db: UserDatabaseInterface, auth_service: AuthServiceInterface) -> None:
+def create_sintetic_data(db: IUserDatabase, auth_service: IAuthService) -> None:
 
     """Crea datos sintéticos para simulación y pruebas"""
 

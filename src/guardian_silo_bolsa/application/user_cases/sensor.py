@@ -1,11 +1,11 @@
-from ...domain.repository.database import UserDatabaseInterface
+from ...domain.repository.database import IUserDatabase
 from ...domain.models.models import Sensor, SensorBase
 from typing import List, Optional
-from ...domain.services.auth_interface import AuthServiceInterface
+from ...domain.services.auth_interface import IAuthService
 
 class GetSensor:
     """ Caso de uso para obtener un sensor """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, sensor_id: int, current_user_id: int) -> Sensor:
@@ -16,7 +16,7 @@ class GetSensor:
 
 class GetSensors:
     """ Caso de uso para obtener todos los sensores """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, current_user_id: int) -> Optional[List[Sensor]]:
@@ -24,7 +24,7 @@ class GetSensors:
 
 class CreateSensor:
     """ Caso de uso para crear un sensor """
-    def __init__(self, repo: UserDatabaseInterface, auth_service: AuthServiceInterface):
+    def __init__(self, repo: IUserDatabase, auth_service: IAuthService):
         self.repo = repo
         self.auth_service = auth_service
     
@@ -39,7 +39,7 @@ class CreateSensor:
 
 class UpdateSensor:
     """ Caso de uso para actualizar un sensor """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, sensor_id: int, model: SensorBase, current_user_id: int) -> Optional[Sensor]:
@@ -47,7 +47,7 @@ class UpdateSensor:
 
 class DeleteSensor:
     """ Caso de uso para eliminar un sensor """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, sensor_id: int, current_user_id: int) -> None:

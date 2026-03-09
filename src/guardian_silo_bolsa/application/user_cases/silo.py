@@ -1,4 +1,4 @@
-from ...domain.repository.database import UserDatabaseInterface
+from ...domain.repository.database import IUserDatabase
 from ...domain.models.models import (
     Silobolsa, 
     SilobolsaBase, 
@@ -17,7 +17,7 @@ from .lote import UpdateLote
 
 class GetSilo:
     """ Caso de uso para obtener un silo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, silo_id: int, current_user_id: int) -> Silobolsa:
@@ -25,7 +25,7 @@ class GetSilo:
 
 class GetSilos:
     """ Caso de uso para obtener todos los silos """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, current_user_id: int) -> Optional[List[Silobolsa]]:
@@ -33,7 +33,7 @@ class GetSilos:
 
 class CreateSilo:
     """ Caso de uso para crear un silo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, silo: SilobolsaBase, current_user_id: int) -> Silobolsa:
@@ -43,7 +43,7 @@ class CreateSilo:
 
 class UpdateSilo:
     """ Caso de uso para actualizar un silo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, silo_id: int, model: SilobolsaBase, current_user_id: int) -> Optional[Silobolsa]:
@@ -57,7 +57,7 @@ class UpdateSilo:
 
 class DeleteSilo:
     """ Caso de uso para eliminar un silo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, silo_id: int, current_user_id: int) -> None:
@@ -66,7 +66,7 @@ class DeleteSilo:
 
 class SetearLote:
     """ Caso de uso para setear el lote de un silo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, data: SiloLoteData, current_user_id: int) -> SilobolsaLoteLink:
@@ -83,7 +83,7 @@ class SetearLote:
 
 class SetearSensor:
     """ Caso de uso para setear el sensor de un silo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, data: SiloSensorData, current_user_id: int) -> SilobolsaSensorLink:
@@ -97,7 +97,7 @@ class SetearSensor:
         
 class VaciarSilo:
     """ Caso de uso para vaciar un silo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, silo_id: int, current_user_id: int) -> None:

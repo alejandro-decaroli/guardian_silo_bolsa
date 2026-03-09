@@ -14,7 +14,7 @@ from ..models.models import (
 )
 from sqlmodel import SQLModel
 
-class DatabaseInterface(ABC):
+class IDatabase(ABC):
     """Interfaz base para la base de datos."""
     def __init__(self, client: Any):
         self.client = client
@@ -40,8 +40,14 @@ class DatabaseInterface(ABC):
         pass
 
 
-class UserDatabaseInterface(DatabaseInterface):
+class IUserDatabase(IDatabase):
     """Interfaz para la base de datos de usuarios. Encargada de manejar todos los datos relacionados con los usuarios."""
+
+
+    @abstractmethod
+    def validate_api_key(self, api_key: str) -> dict:
+        """Valida la API key de un sensor."""
+        pass
 
     @abstractmethod
     def get_by_handshake(self, mac_address: str) -> Sensor:
@@ -128,7 +134,7 @@ class UserDatabaseInterface(DatabaseInterface):
         """Obtiene un silo y su sensor."""
         pass
 
-class SensorDatabaseInterface(DatabaseInterface):
+class ISensorDatabase(IDatabase):
     """Interfaz para la base de datos para series temporales. Encargada de manejar los datos de los sensores."""
     @abstractmethod
     def write(self, data: dict) -> bool:

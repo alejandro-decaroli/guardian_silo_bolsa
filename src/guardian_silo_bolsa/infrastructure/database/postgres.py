@@ -1,8 +1,8 @@
 from sqlalchemy.orm import selectinload
 from sqlmodel import create_engine, Session, SQLModel, select, text
 from dotenv import load_dotenv
-from typing import Optional, List, Any, Type
-from ...domain.repository.database import UserDatabaseInterface
+from typing import Optional, List, Any, Type, Dict
+from ...domain.repository.database import IUserDatabase
 import os   
 from ...domain.models.models import (
     Silobolsa,
@@ -36,18 +36,31 @@ DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{database}"
 engine = create_engine(DATABASE_URL)
 
 
-class PostgresDatabase(UserDatabaseInterface):
+class PostgresDatabase(IUserDatabase):
 
     """Implementación de la interfaz de base de datos para PostgreSQL."""
 
     def __init__(self, client=engine):
         self.engine = client
 
+    def validate_api_key(self, api_key: str) -> Dict[str, Any]:
+        with Session(self.engine) as session:
+            try:
+                statement = select(Sensor).where(Sensor.api_key == api_key).options(selectinload(Sensor.silobolsa_links))
+                sensor: Optional[Sensor] = session.exec(statement).first()
+                silobolsa: Optional[Silobolsa] = session.get(Silobolsa, sensor.silobolsa_links[-1].silobolsa_id)
+                if sensor is None:
+                    return None
+                return {"sensor": sensor, "silobolsa": silobolsa}
+            except Exception as e:
+                session.rollback()
+                raise e
+
     def get_user_by_email(self, usuario_data: UsuarioValidation) -> Optional[Usuario]:
         """Verifica si existe un usuario con el email proporcionado."""
         with Session(self.engine) as session:
             try:
-                db_object: Optional[SQLModel] = session.exec(select(Usuario).where(Usuario.email == usuario_data.email)).first()
+                db_object: Optional[Usuario] = session.exec(select(Usuario).where(Usuario.email == usuario_data.email)).first()
                 return db_object
             except Exception as e:
                 session.rollback()
@@ -57,7 +70,7 @@ class PostgresDatabase(UserDatabaseInterface):
         """Obtiene un usuario por su ID."""
         with Session(self.engine) as session:
             try:
-                db_object: Optional[SQLModel] = session.exec(select(Usuario).where(Usuario.id == user_id)).first()
+                db_object: Optional[Usuario] = session.exec(select(Usuario).where(Usuario.id == user_id)).first()
                 return db_object
             except Exception as e:
                 session.rollback()
@@ -67,7 +80,7 @@ class PostgresDatabase(UserDatabaseInterface):
         """Obtiene todos los usuarios."""
         with Session(self.engine) as session:
             try:
-                db_objects: List[SQLModel] = session.exec(select(Usuario)).all()
+                db_objects: List[Usuario] = session.exec(select(Usuario)).all()
                 return db_objects
             except Exception as e:
                 session.rollback()

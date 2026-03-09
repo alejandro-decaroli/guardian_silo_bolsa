@@ -10,20 +10,44 @@ from fastapi import HTTPException, status
 
 load_dotenv()
 
-API_URL = os.getenv("API_URL", "http://guardian_api:8000/ingest")
+INGEST_API_URL = os.getenv("INGEST_API_URL", "http://guardian_api:8000/api/v1/ingest")
+HANDSHAKE_API_URL = os.getenv("HANDSHAKE_API_URL", "http://guardian_api:8000/api/v1/sensors/handshake")
 
+MAC_ADDRESS = [
+    "00:11:22:33:44:55",
+    "00:11:22:33:44:56",
+    "00:11:22:33:44:57",
+    "00:11:22:33:44:58",
+    "00:11:22:33:44:59",
+    "00:11:22:33:44:60"
+]
+  
 class Sensor:
-    def __init__(self, sensor_id: str, grano: str, silo: str):
-        self.sensor_id = sensor_id
-        self.grano = grano
-        self.silo = silo
+    def __init__(self, mac_address: str):
+        self.mac_address = mac_address
+        self.api_key = None
         self.modo = "NORMAL"
         self.temp = 20
         self.hum = 10
         self.co2 = 350
+        self.handshake = False
+
+    def do_handshake(self) -> None:
+        """Método para realizar el handshake con la API"""
+
+        try:
+            response: JSONResponse = requests.get(HANDSHAKE_API_URL, json={"mac_address": self.mac_address})
+            if response.status_code == 200:
+                self.handshake = True
+                self.api_key = response.json().get("api_key")
+        except requests.exceptions.ConnectionError:
+            time.sleep(5)
+        except Exception as e:
+            time.sleep(5)
 
     def simular(self) -> None:
-        
+        """Método para simular los valores de los sensores"""
+
         if self.modo == "NORMAL":
 
             if self.temp is None:
@@ -61,37 +85,30 @@ class Sensor:
     def publicar(self) -> JSONResponse:
 
         payload = {
-            "grano": self.grano,
-            "sensor_id": self.sensor_id,
-            "silo": self.silo,
+            "api_key": self.api_key,
             "timestamp": datetime.now().isoformat(),
             "temp": self.temp,
             "co2": self.co2,
             "hum": self.hum
         }
 
-        response: JSONResponse = requests.post(API_URL, json=payload)
+        response: JSONResponse = requests.post(INGEST_API_URL, json=payload)
 
         return response
 
 sensores = [
-    Sensor("sensor_01", "soja", "Silo-Norte-Rosario"), 
-    Sensor("sensor_02", "soja", "Silo-Sur-Casilda"), 
-    Sensor("sensor_03", "maiz", "Silo-Este-Victoria"), 
-    Sensor("sensor_04", "trigo", "Silo-Oeste-Roldan"),
-    Sensor("sensor_05", "trigo", "Silo-este-Roldan"),
-    Sensor("sensor_06", "maiz", "Silo-oeste-Victoria")
-    ]
-
-
-print("🚀 Iniciando simulador de 4 sensores... (Ctrl+C para detener)")
+    Sensor(mac_address) for mac_address in MAC_ADDRESS
+]
 
 try:
     while True:
         for sensor in sensores:
             try:
-                sensor.simular()
-                response: JSONResponse = sensor.publicar()
+                if not sensor.handshake:
+                    sensor.do_handshake()
+                else:
+                    sensor.simular()
+                    response: JSONResponse = sensor.publicar()
             except Exception as e:
                 raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
         time.sleep(2)  

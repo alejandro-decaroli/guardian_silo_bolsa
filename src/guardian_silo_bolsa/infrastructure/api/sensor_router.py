@@ -7,7 +7,7 @@ from ...application.user_cases.sensor import (
     DeleteSensor
 )
 from ..database.deps import postgres_db
-from ...domain.models.models import Sensor, SensorBase, Usuario
+from ...domain.models.models import Sensor, SensorBase, Usuario, Mac_Address
 from typing import List, Dict, Any
 from ..security.deps import get_current_user
 from ..security.auth_handler import auth_service_instance
@@ -21,11 +21,11 @@ def get_user_case(case_type: str):
         if case_type == "delete": return DeleteSensor(postgres_db)
     return _get_case
 
-sensor_router = APIRouter(prefix="/sensors", tags=["sensors"], dependencies=[Depends(get_current_user)])
+sensor_router = APIRouter(prefix="/sensors", tags=["sensors"])
 
 @sensor_router.get("/handshake", status_code=status.HTTP_200_OK, response_model=Sensor)
-def handshake(mac_address: Any, case: GetSensor = Depends(get_user_case("get"))) -> Sensor:
-    return case.get_by_handshake(mac_address)
+def handshake(mac_address: Mac_Address, case: GetSensor = Depends(get_user_case("get"))) -> Sensor:
+    return case.get_by_handshake(mac_address.mac_address)
 
 @sensor_router.get("/{sensor_id}", response_model=Sensor)
 def get_sensor(sensor_id: int, case: GetSensor = Depends(get_user_case("get")), current_user: Usuario = Depends(get_current_user)) -> Sensor:

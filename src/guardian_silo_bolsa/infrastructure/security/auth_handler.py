@@ -4,16 +4,16 @@ from typing import Optional
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
 import os
-from ...domain.services.auth_interface import AuthServiceInterface
+from ...domain.services.auth_interface import IAuthService
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 SECRET_KEY = os.getenv("SECRET_KEY", "clave_secreta_super_segura") 
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
-class AuthService(AuthServiceInterface):
+class AuthService(IAuthService):
     """
-    Implementación de la interfaz AuthServiceInterface.
+    Implementación de la interfaz IAuthService.
     """
     def __init__(self):
         self.pwd_context = pwd_context

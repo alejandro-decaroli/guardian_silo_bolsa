@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class AuthServiceInterface(ABC):
+class IAuthService(ABC):
     """ Interfaz para servicios de autenticación """
     @abstractmethod
     def hash_password(self, password: str) -> str:

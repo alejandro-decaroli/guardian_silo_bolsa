@@ -1,10 +1,10 @@
-from ...domain.repository.database import UserDatabaseInterface
+from ...domain.repository.database import IUserDatabase
 from ...domain.models.models import Lote, LoteBase, Campo
 from typing import List, Optional
 
 class GetLote:
     """ Caso de uso para obtener un lote """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, lote_id: int, current_user_id: int) -> Lote:
@@ -12,7 +12,7 @@ class GetLote:
 
 class GetLotes:
     """ Caso de uso para obtener todos los lotes """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, current_user_id: int) -> Optional[List[Lote]]:
@@ -20,7 +20,7 @@ class GetLotes:
 
 class CreateLote:
     """ Caso de uso para crear un lote """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, lote: LoteBase, current_user_id: int) -> Lote:
@@ -31,7 +31,7 @@ class CreateLote:
 
 class UpdateLote:
     """ Caso de uso para actualizar un lote """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, lote_id: int, model: LoteBase, current_user_id: int) -> Optional[Lote]:
@@ -42,7 +42,7 @@ class UpdateLote:
 
 class DeleteLote:
     """ Caso de uso para eliminar un lote """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, lote_id: int, current_user_id: int) -> None:

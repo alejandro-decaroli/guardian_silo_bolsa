@@ -1,10 +1,10 @@
-from ...domain.repository.database import UserDatabaseInterface
+from ...domain.repository.database import IUserDatabase
 from ...domain.models.models import Campo, CampoBase
 from typing import List, Optional
 
 class GetCampo:
     """ Caso de uso para obtener un campo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, campo_id: int, current_user_id: int) -> Campo:
@@ -12,7 +12,7 @@ class GetCampo:
 
 class GetCampos:
     """ Caso de uso para obtener todos los campos """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, current_user_id: int) -> Optional[List[Campo]]:
@@ -20,7 +20,7 @@ class GetCampos:
 
 class CreateCampo:
     """ Caso de uso para crear un campo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, campo: CampoBase, current_user_id: int) -> Campo:
@@ -29,7 +29,7 @@ class CreateCampo:
 
 class UpdateCampo:
     """ Caso de uso para actualizar un campo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, campo_id: int, model: CampoBase, current_user_id: int) -> Optional[Campo]:
@@ -37,7 +37,7 @@ class UpdateCampo:
 
 class DeleteCampo:
     """ Caso de uso para eliminar un campo """
-    def __init__(self, repo: UserDatabaseInterface):
+    def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
     def execute(self, campo_id: int, current_user_id: int) -> None:

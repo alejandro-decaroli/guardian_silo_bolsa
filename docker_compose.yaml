@@ -25,8 +25,9 @@ services:
     networks:
       - silo_net
     command: python src/guardian_silo_bolsa/simulator.py
-    environment:
+    env_file:
       - .env
+
   postgres_guardian:
     image: postgres:17-alpine
     container_name: postgres_guardian

@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse
 from .domain.exceptions.exceptions import AppError
 from .infrastructure.database.deps import postgres_db
-from .simulator_v2 import create_sintetic_data
+from .sintetic_data_generator import create_sintetic_data
 from .infrastructure.security.auth_handler import AuthService
 
 load_dotenv()
@@ -30,7 +30,7 @@ app = FastAPI(
         debug=True,
         title="Guardián Silo Bolsa API",
         description="Sistema de monitoreo escalable para el agro",
-        version="1.11.1",
+        version="1.13.0",
         lifespan=lifespan
     )
 
