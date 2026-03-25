@@ -20,6 +20,7 @@ from .domain.models.models import (
     )
 from .domain.repository.database import IUserDatabase
 from .domain.services.auth_interface import IAuthService
+import datetime
 
 def create_user(db: IUserDatabase, auth_service: IAuthService) -> bool:
     """
