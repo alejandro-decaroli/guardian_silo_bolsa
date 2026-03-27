@@ -19,6 +19,9 @@ class TelemetryRecord(SQLModel, table=True): # type: ignore
     id: int| None = Field(default=None, primary_key=True)
     alerta: bool = Field(default="False")
     visto: bool = Field(default=False)
+    mensaje: str = Field(default="")
+    silo: int
+
 
 class Mac_Address(SQLModel):
     """Dirección MAC del sensor."""

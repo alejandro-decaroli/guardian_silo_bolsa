@@ -1,8 +1,8 @@
 from ...domain.exceptions.exceptions import AppError
 from ...domain.repository.database import ISensorDatabase, IUserDatabase
 from ...domain.services.notifications import INotificatorService
-from ...domain.models.models import TelemetrySchema
-from typing import Dict, Tuple
+from ...domain.models.models import TelemetrySchema, TelemetryRecord
+from typing import Dict, Tuple, Any
 from datetime import timedelta
 from ...domain.models.models import Sensor, Silobolsa
 
@@ -12,7 +12,7 @@ class SaveRecord:
     def __init__(self, time_series_db: ISensorDatabase):
         self.time_series_db = time_series_db
     
-    def execute(self, payload: TelemetrySchema, sensor_id: int) -> Dict[str,str]:
+    def execute(self, payload: TelemetrySchema, sensor_id: int) -> Dict[str,Any]:
 
         try:
 
@@ -73,8 +73,14 @@ ultimas_alertas: Dict = {}
 
 class ChequearUmbrales():
     """Caso de uso para chequear los umbrales de los sensores y alertar de ser necesario"""
-    def __init__(self, notificator: INotificatorService):
+    def __init__(self, notificator: INotificatorService, repo: IUserDatabase):
         self.notificator: INotificatorService = notificator
+        self.repo = repo
+
+    def _save_alerts(self, alert: TelemetryRecord) -> None:
+        """Guarda las alertas en base de datos"""
+        self.repo.create_entity(alert)
+        print("ALERTA GUARDADA")
 
     def check_thresholds(self, payload: TelemetrySchema, sensor: Sensor, silobolsa: Silobolsa) -> None:
    
@@ -96,6 +102,22 @@ class ChequearUmbrales():
             alertas.append(f"💧 *Humedad Elevada*: {payload.hum}%")
 
         if alertas:
+
+            mensaje_alerta = ""
+
+            for alerta in alertas:
+                mensaje_alerta = mensaje_alerta + " " + alerta 
+
+            alerta_content = {
+                "alerta":True,
+                "visto":False,
+                "mensaje":mensaje_alerta,
+                "silo":silobolsa.id
+            }
+
+            alerta = TelemetryRecord.model_validate(alerta_content)
+
+            self._save_alerts(alerta)
 
             mensaje = f"🚨 *Alerta en Silo ID:* {silobolsa.id}\n*Ubicación:* {silobolsa.ubicacion}\n*Grano:* {silobolsa.grano}\n*Sensor ID:* `{sensor.id}`\n*Modelo:* {sensor.modelo}\n" + "\n".join(alertas)
     

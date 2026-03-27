@@ -16,7 +16,7 @@ def get_use_case(case: str) -> callable: # type: ignore
         elif case == "backup":
             return CSVBackup()
         elif case == "check":
-            return ChequearUmbrales(telegram_notifier)
+            return ChequearUmbrales(telegram_notifier, postgres_db)
     return _get
 
 telemetry_router = APIRouter(prefix="/ingest", tags=["Telemetry"])
