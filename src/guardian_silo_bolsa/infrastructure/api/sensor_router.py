@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status # type: ignore
 from ...application.user_cases.sensor import (
     CreateSensor, 
     GetSensor, 
@@ -8,7 +8,7 @@ from ...application.user_cases.sensor import (
 )
 from ..database.deps import postgres_db
 from ...domain.models.models import Sensor, SensorBase, Usuario, Mac_Address
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from ..security.deps import get_current_user
 from ..security.auth_handler import auth_service_instance
 
@@ -32,12 +32,12 @@ def get_sensor(sensor_id: int, case: GetSensor = Depends(get_user_case("get")), 
     return case.execute(sensor_id, current_user.id)
 
 @sensor_router.get("/", status_code=status.HTTP_200_OK, response_model=List[Sensor])
-def get_sensors(case: GetSensors = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Sensor]:
+def get_sensors(case: GetSensors = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> Optional[List[Sensor]]:
     return case.execute(current_user.id)
 
-@sensor_router.post("/create", status_code=status.HTTP_201_CREATED, response_model=Sensor)
-def create_sensor(sensor: SensorBase, case: CreateSensor = Depends(get_user_case("create")), current_user: Usuario = Depends(get_current_user)) -> Sensor:
-    return case.execute(sensor, current_user.id)
+@sensor_router.post("/create/{campo_id}", status_code=status.HTTP_201_CREATED, response_model=Sensor)
+def create_sensor(campo_id: int, sensor: SensorBase, case: CreateSensor = Depends(get_user_case("create")), current_user: Usuario = Depends(get_current_user)) -> Sensor:
+    return case.execute(campo_id, sensor, current_user.id)
 
 @sensor_router.put("/update/{sensor_id}", status_code=status.HTTP_200_OK, response_model=Sensor)
 def update_sensor(sensor_id: int, sensor: SensorBase, case: UpdateSensor = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Sensor:

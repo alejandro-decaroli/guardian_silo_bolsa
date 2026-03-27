@@ -5,8 +5,8 @@ from influxdb_client_3 import (
   WritePrecision,
   WriteOptions,
   write_client_options
-  )
-from dotenv import load_dotenv
+  ) # type: ignore
+from dotenv import load_dotenv # type: ignore
 import os
 from ...domain.repository.database import ISensorDatabase
 

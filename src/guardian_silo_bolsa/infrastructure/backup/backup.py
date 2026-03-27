@@ -1,9 +1,11 @@
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 import csv
 from pathlib import Path
 import os
 from ...domain.repository.backup import IBackup
 from ...domain.models.models import TelemetrySchema
+from ...domain.exceptions.exceptions import AppError
+from typing import Dict
 
 load_dotenv()
 # Definimos la ruta del archivo 
@@ -13,12 +15,12 @@ class CSVBackup(IBackup):
     """
     Implementación de backup usando CSV
     """
-    def __init__(self, path: str = None):
+    def __init__(self, path: str | None = None):
         if path is None:
-            path = CSV_FILE
+            path = str(CSV_FILE)
         self.path = path
 
-    def create_backup(self, datos: TelemetrySchema, silobolsa_id: int, sensor_id: int) -> dict:
+    def create_backup(self, datos: TelemetrySchema, silobolsa_id: int, sensor_id: int) -> Dict:
 
         try:
             # Verifico si el archivo existe para escribir la cabecera la primera vez
@@ -44,17 +46,14 @@ class CSVBackup(IBackup):
                 f.flush()
             
         except Exception as e:
-            print(f"Error al crear backup: {e}")
-            return {"status_code": 500, "message": "Error al crear backup, causa:" + str(e)}
-        
+            raise AppError("Error al crear backup", 500)
         return {"status_code": 201, "message": "Backup creado con éxito"}
 
-    def restore_backup(self) -> dict:
+    def restore_backup(self) -> Dict:
         try:
             # TODO: Implementar restauración desde CSV
             pass
         except Exception as e:
-            print(f"Error al restaurar backup: {e}")
-            return {"status_code": 500, "message": "Error al restaurar backup, causa:" + str(e)}
+            raise AppError("Error al restaurar backup", 500)
         
         return {"status_code": 200, "message": "Backup restaurado con éxito"}

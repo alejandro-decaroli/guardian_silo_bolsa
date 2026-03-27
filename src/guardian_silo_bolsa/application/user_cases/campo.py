@@ -1,6 +1,7 @@
 from ...domain.repository.database import IUserDatabase
 from ...domain.models.models import Campo, CampoBase
 from typing import List, Optional
+from ...domain.exceptions.exceptions import EntityNotFoundError
 
 class GetCampo:
     """ Caso de uso para obtener un campo """
@@ -8,7 +9,10 @@ class GetCampo:
         self.repo = repo
     
     def execute(self, campo_id: int, current_user_id: int) -> Campo:
-        return self.repo.get_entity(current_user_id, campo_id, Campo)
+        campo = self.repo.get_entity(campo_id, Campo)
+        if campo.usuario_id != current_user_id:
+            raise EntityNotFoundError("Campo")
+        return campo
 
 class GetCampos:
     """ Caso de uso para obtener todos los campos """
@@ -32,8 +36,11 @@ class UpdateCampo:
     def __init__(self, repo: IUserDatabase):
         self.repo = repo
     
-    def execute(self, campo_id: int, model: CampoBase, current_user_id: int) -> Optional[Campo]:
-        return self.repo.update_entity(current_user_id, campo_id, Campo, model)
+    def execute(self, campo_id: int, model: CampoBase, current_user_id: int) -> Campo:
+        campo = self.repo.get_entity(campo_id, Campo)
+        if campo.usuario_id != current_user_id:
+            raise EntityNotFoundError("Campo")
+        return self.repo.update_entity(campo_id, Campo, model)
 
 class DeleteCampo:
     """ Caso de uso para eliminar un campo """
@@ -41,4 +48,7 @@ class DeleteCampo:
         self.repo = repo
     
     def execute(self, campo_id: int, current_user_id: int) -> None:
-        self.repo.delete_entity(current_user_id, campo_id, Campo)
+        campo = self.repo.get_entity(campo_id, Campo)
+        if campo.usuario_id != current_user_id:
+            raise EntityNotFoundError("Campo")
+        self.repo.delete_entity(campo_id, Campo)

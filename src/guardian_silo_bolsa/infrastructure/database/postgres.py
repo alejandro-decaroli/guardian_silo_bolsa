@@ -1,21 +1,16 @@
-from sqlalchemy.orm import selectinload
-from sqlmodel import create_engine, Session, SQLModel, select, text
-from dotenv import load_dotenv
+from sqlalchemy.orm import selectinload # type: ignore
+from sqlmodel import create_engine, Session, SQLModel, select, text # type: ignore
+from dotenv import load_dotenv # type: ignore
 from typing import Optional, List, Any, Type, Dict
 from ...domain.repository.database import IUserDatabase
 import os   
 from ...domain.models.models import (
     Silobolsa,
     Sensor,
-    Lote,
     Campo,
     Usuario,
     UsuarioBase,
     UsuarioValidation,
-    SiloLoteData,
-    SilobolsaLoteLink,
-    SilobolsaSensorLink,
-    SiloSensorData
 )
 from ...domain.exceptions.exceptions import (
     EntityAsociatedError,
@@ -43,60 +38,30 @@ class PostgresDatabase(IUserDatabase):
     def __init__(self, client=engine):
         self.engine = client
 
-    def validate_api_key(self, api_key: str) -> Dict[str, Any]:
+    def validate_api_key(self, api_key: str) -> Sensor:
         with Session(self.engine) as session:
             try:
-                statement = select(Sensor).where(Sensor.api_key == api_key).options(selectinload(Sensor.silobolsa_links))
+                statement = select(Sensor).where(Sensor.api_key == api_key)
                 sensor: Optional[Sensor] = session.exec(statement).first()
-                silobolsa: Optional[Silobolsa] = session.get(Silobolsa, sensor.silobolsa_links[-1].silobolsa_id)
                 if sensor is None:
-                    return None
-                return {"sensor": sensor, "silobolsa": silobolsa}
+                    raise EntityNotFoundError("Sensor no encontrado")
+                return sensor
             except Exception as e:
                 session.rollback()
                 raise e
 
-    def get_user_by_email(self, usuario_data: UsuarioValidation) -> Optional[Usuario]:
+    def get_user_by_email(self, usuario_data: UsuarioValidation) -> Usuario:
         """Verifica si existe un usuario con el email proporcionado."""
         with Session(self.engine) as session:
             try:
                 db_object: Optional[Usuario] = session.exec(select(Usuario).where(Usuario.email == usuario_data.email)).first()
+                if db_object is None:
+                    raise EntityNotFoundError("Usuario")
                 return db_object
             except Exception as e:
                 session.rollback()
                 raise e
 
-    def get_user_by_id(self, user_id: int) -> Usuario:
-        """Obtiene un usuario por su ID."""
-        with Session(self.engine) as session:
-            try:
-                db_object: Optional[Usuario] = session.exec(select(Usuario).where(Usuario.id == user_id)).first()
-                return db_object
-            except Exception as e:
-                session.rollback()
-                raise e
-
-    def get_all_users(self) -> List[Usuario]:
-        """Obtiene todos los usuarios."""
-        with Session(self.engine) as session:
-            try:
-                db_objects: List[Usuario] = session.exec(select(Usuario)).all()
-                return db_objects
-            except Exception as e:
-                session.rollback()
-                raise e
-
-    def create_user(self, usuario_data: Usuario) -> Usuario:
-        """Crea un usuario."""
-        with Session(self.engine) as session:
-            try:
-                session.add(usuario_data)
-                session.commit()
-                session.refresh(usuario_data)
-                return usuario_data
-            except Exception as e:
-                session.rollback()
-                raise e
 
     def update_user(self, entity_id: int, data: UsuarioBase) -> Usuario:
         """Actualiza un usuario."""
@@ -123,20 +88,7 @@ class PostgresDatabase(IUserDatabase):
                 session.rollback()
                 raise e
 
-    def delete_user(self, user_id: int) -> None:
-        """Elimina un usuario."""
-        with Session(self.engine) as session:
-            try:
-                db_user = session.get(Usuario, user_id)
-                if not db_user:
-                    raise EntityNotFoundError("Usuario")
-                session.delete(db_user)
-                session.commit()
-            except Exception as e:
-                session.rollback()
-                raise e
-
-    def get_entity(self, current_user_id: int, entity_id: int, model: type[SQLModel]) -> Optional[SQLModel]:
+    def get_entity(self, entity_id: int, model: type[SQLModel]) -> Optional[SQLModel]:
         """
         Obtiene una entidad en base a su id.
         
@@ -151,8 +103,6 @@ class PostgresDatabase(IUserDatabase):
                 db_object: Optional[SQLModel] = session.get(model, entity_id)
                 if not db_object:
                     raise EntityNotFoundError(model.__name__)
-                if db_object.usuario_id != current_user_id:
-                    raise EntityNotFoundError(model.__name__)
                 return db_object
             except Exception as e:
                 session.rollback()
@@ -163,7 +113,7 @@ class PostgresDatabase(IUserDatabase):
         Obtiene una lista de entidades.
         
         Args:
-            user_id: ID del usuario.
+            current_user_id: ID del usuario.
             model: Modelo a obtener.
         
         Returns:
@@ -171,8 +121,13 @@ class PostgresDatabase(IUserDatabase):
         """
         with Session(self.engine) as session:
             try:
-                db_objects: Optional[List[SQLModel]] = session.exec(select(model).where(model.usuario_id == current_user_id)).all()
-                return db_objects
+                if model is Sensor or model is Silobolsa:
+                    campos = session.exec(select(Campo).where(Campo.usuario_id == current_user_id)).all()
+                    entities = session.exec(select(model).where(model.campo_id.in_([campo.id for campo in campos]))).all()
+                    return entities
+                else:
+                    db_objects = session.exec(select(model).where(model.usuario_id == current_user_id)).all()
+                    return db_objects
             except Exception as e:
                 session.rollback()
                 raise e
@@ -194,7 +149,7 @@ class PostgresDatabase(IUserDatabase):
                 session.rollback()
                 raise e
 
-    def update_entity(self, current_user_id: int, entity_id: int, model_class: Type[SQLModel], data: SQLModel) -> SQLModel:
+    def update_entity(self, entity_id: int, model_class: Type[SQLModel], data: SQLModel) -> SQLModel:
         """
         Actualiza una entidad.
         
@@ -209,10 +164,8 @@ class PostgresDatabase(IUserDatabase):
         with Session(self.engine) as session:
             try:
                 # 1. Buscamos el registro actual por ID
-                db_object = session.get(model_class, entity_id)
+                db_object: SQLModel = session.get(model_class, entity_id)
                 if not db_object:
-                    raise EntityNotFoundError(model_class.__name__)
-                if db_object.usuario_id != current_user_id:
                     raise EntityNotFoundError(model_class.__name__)
 
                 # 2. Extraemos los datos nuevos como diccionario
@@ -234,7 +187,7 @@ class PostgresDatabase(IUserDatabase):
                 session.rollback()
                 raise e
 
-    def delete_entity(self, current_user_id: int, entity_id: int, model: Type[SQLModel]) -> None:
+    def delete_entity(self, entity_id: int, model: Type[SQLModel]) -> None:
         """
         Elimina una entidad.
         
@@ -246,119 +199,10 @@ class PostgresDatabase(IUserDatabase):
                 db_object: Optional[SQLModel] = session.get(model, entity_id)
                 if not db_object:
                     raise EntityNotFoundError(model.__name__)
-                if db_object.usuario_id != current_user_id:
-                    raise EntityNotFoundError(model.__name__)
-                if not isinstance(db_object, Usuario):
-                    db_object.estado = "INACTIVO"
-                    session.add(db_object)
-                else:
-                    session.delete(db_object)
+                """ if not isinstance(db_object, Usuario):
+                    db_object.estado = "INACTIVO" """
+                session.delete(db_object)
                 session.commit()
-            except Exception as e:
-                session.rollback()
-                raise e
-
-    def setear_lote(self, current_user_id: int, data: SiloLoteData) -> SilobolsaLoteLink:
-        """
-        Setea el lote de un silo.
-        
-        Args:
-            data: Datos del silo y lote.
-        """
-        with Session(self.engine) as session:
-            try:
-                silo_lote = SilobolsaLoteLink(
-                    usuario_id=current_user_id,
-                    silobolsa_id=data.silobolsa_id,
-                    lote_id=data.lote_id,
-                    cantidad=data.cantidad
-                )
-                session.add(silo_lote)
-                session.commit()
-                session.refresh(silo_lote)
-                return silo_lote
-            except Exception as e:
-                session.rollback()
-                raise e
-
-    def setear_sensor(self, current_user_id: int, data: SiloSensorData) -> SilobolsaSensorLink:
-        """
-        Setea el sensor de un silo.
-        
-        Args:
-            data: Datos del silo y sensor.
-        """
-        with Session(self.engine) as session:
-            try:
-                silo_sensor = SilobolsaSensorLink(
-                    usuario_id=current_user_id,
-                    silobolsa_id=data.silobolsa_id,
-                    sensor_id=data.sensor_id
-                )
-                session.add(silo_sensor)
-                session.commit()
-                session.refresh(silo_sensor)
-                return silo_sensor
-            except Exception as e:
-                session.rollback()
-                raise e
-
-    def get_silo_and_sensor(self, current_user_id: int, entity_id: int) -> Silobolsa:
-        """
-        Obtiene un silo y su sensor.
-        
-        Args:
-            entity_id: ID del silo.
-        """
-        with Session(self.engine) as session:
-            try:
-                statement = select(Silobolsa).where(Silobolsa.id == entity_id).options(selectinload(Silobolsa.sensor_links))
-                result = session.exec(statement).first()
-                if not result:
-                    raise EntityNotFoundError("Silobolsa")
-                if result.usuario_id != current_user_id:
-                    raise EntityNotFoundError("Silobolsa")
-                return result
-            except Exception as e:
-                session.rollback()
-                raise e
-    
-    def get_silo_and_lotes(self, current_user_id: int, entity_id: int) -> Silobolsa:
-        """
-        Obtiene un silo y sus lotes.
-        
-        Args:
-            entity_id: ID del silo.
-        """
-        with Session(self.engine) as session:
-            try:
-                statement = select(Silobolsa).where(Silobolsa.id == entity_id).options(selectinload(Silobolsa.lotes_links))
-                result = session.exec(statement).first()
-                if not result:
-                    raise EntityNotFoundError("Silobolsa")
-                if result.usuario_id != current_user_id:
-                    raise EntityNotFoundError("Silobolsa")
-                return result
-            except Exception as e:
-                session.rollback()
-                raise e
-    
-    def get_lote_and_silos(self, current_user_id: int, entity_id: int) -> Lote:
-        """
-        Obtiene un lote y sus silos.
-        
-        Args:
-            entity_id: ID del lote.
-        """
-        with Session(self.engine) as session:
-            try:
-                statement = select(Lote).where(Lote.id == entity_id).options(selectinload(Lote.silobolsas_links))
-                result = session.exec(statement).first()
-                if not result:
-                    raise EntityNotFoundError("Lote")
-                if result.usuario_id != current_user_id:
-                    raise EntityNotFoundError("Lote")
-                return result
             except Exception as e:
                 session.rollback()
                 raise e

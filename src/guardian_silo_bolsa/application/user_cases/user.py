@@ -13,22 +13,10 @@ class GetUser:
     def execute(self, user_id: int, role: str) -> Usuario:
         if role != "admin":
             raise InvalidCredentialsError("No tienes permisos para obtener este usuario")
-        db_user = self.repo.get_user_by_id(user_id)
+        db_user = self.repo.get_entity(user_id, Usuario)
         db_user.password = ""
         return db_user
 
-class GetUsers:
-    """ Caso de uso para obtener todos los usuarios """
-    def __init__(self, repo: IUserDatabase):
-        self.repo = repo
-    
-    def execute(self, role: str) -> Optional[List[Usuario]]:
-        if role != "admin":
-            raise InvalidCredentialsError("No tienes permisos para obtener todos los usuarios")
-        db_users = self.repo.get_all_users()
-        for user in db_users:
-            user.password = ""
-        return db_users
 
 class UpdateUser:
     """ Caso de uso para actualizar un usuario """
@@ -36,7 +24,7 @@ class UpdateUser:
         self.repo = repo
         self.auth_service = auth_service
     
-    def execute(self, user_id: int, current_user_id: int, model: UsuarioBase) -> Optional[Usuario]:
+    def execute(self, user_id: int, current_user_id: int, model: UsuarioBase) -> Usuario:
         if current_user_id != user_id:
             raise InvalidCredentialsError("No tienes permisos para actualizar este usuario")
         model.password = self.auth_service.hash_password(model.password)
@@ -56,7 +44,7 @@ class DeleteUser:
     def execute(self, user_id: int, current_user_id: int) -> None:
         if current_user_id != user_id:
             raise InvalidCredentialsError("No tienes permisos para eliminar este usuario")
-        self.repo.delete_user(user_id)
+        self.repo.delete_entity(user_id, Usuario)
 
 class LoginUser:
     """ Caso de uso para iniciar sesión """
@@ -89,7 +77,7 @@ class SignUpUser:
         duplicated_user = self.repo.get_user_by_email(usuario_validation)
         if duplicated_user:
             raise EntityAlreadyExistsError(usuario_validation.email)
-        db_user = self.repo.create_user(user) 
+        db_user = self.repo.create_entity(user) 
         db_user.password = ""
         token = self.auth_service.create_token(data={"sub": str(db_user.id)}, sensor=False)
         return token, db_user

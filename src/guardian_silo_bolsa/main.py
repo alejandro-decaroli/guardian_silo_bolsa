@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Request
-from dotenv import load_dotenv
+from fastapi import FastAPI, Request # type ignore
+from dotenv import load_dotenv # type ignore
 from .infrastructure.api.main_router import main_router
 from contextlib import asynccontextmanager
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse # type ignore
 from .domain.exceptions.exceptions import AppError
 from .infrastructure.database.deps import postgres_db
 from .sintetic_data_generator import create_sintetic_data
@@ -30,7 +30,7 @@ app = FastAPI(
         debug=True,
         title="Guardián Silo Bolsa API",
         description="Sistema de monitoreo escalable para el agro",
-        version="1.13.0",
+        version="1.14.8",
         lifespan=lifespan
     )
 
@@ -60,6 +60,6 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn # type ignore
     uvicorn.run(app, host="0.0.0.0", port=8000)
 

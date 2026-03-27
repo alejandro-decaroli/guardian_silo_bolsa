@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status # type: ignore
 from ...application.user_cases.campo import (
     CreateCampo, 
     GetCampo, 
@@ -8,7 +8,7 @@ from ...application.user_cases.campo import (
 )
 from ..database.deps import postgres_db
 from ...domain.models.models import CampoBase, Campo, Usuario
-from typing import List
+from typing import List, Optional
 from ..security.deps import get_current_user
 
 def get_user_case(case_type: str):
@@ -27,7 +27,7 @@ def get_campo(campo_id: int, current_user: Usuario = Depends(get_current_user), 
     return case.execute(campo_id, current_user.id)
 
 @campo_router.get("/", status_code=status.HTTP_200_OK, response_model=List[Campo])
-def get_campos(case: GetCampos = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Campo]:
+def get_campos(case: GetCampos = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> Optional[List[Campo]]:
     return case.execute(current_user.id)
 
 @campo_router.post("/create", status_code=status.HTTP_201_CREATED, response_model=Campo)

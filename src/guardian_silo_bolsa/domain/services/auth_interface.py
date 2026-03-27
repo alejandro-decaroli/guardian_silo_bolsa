@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Dict, Optional
 
 class IAuthService(ABC):
     """ Interfaz para servicios de autenticación """
@@ -18,6 +19,6 @@ class IAuthService(ABC):
         pass
 
     @abstractmethod
-    def decode_token(self, token: str) -> dict:
+    def decode_token(self, token: str) -> Optional[Dict]:
         """ Decodifica un token JWT """
         pass

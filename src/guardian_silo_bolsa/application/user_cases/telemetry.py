@@ -97,7 +97,7 @@ class ChequearUmbrales():
 
         if alertas:
 
-            mensaje = f"🚨 *Alerta en Silo ID:{silobolsa.id} Latitud: {silobolsa.latitud} Longitud: {silobolsa.longitud}*\nSensor ID: `{sensor.id}` Mac Address: `{sensor.mac_address}`\n" + "\n".join(alertas)
+            mensaje = f"🚨 *Alerta en Silo ID:{silobolsa.id} Ubicación: {silobolsa.latitud} Longitud: {silobolsa.longitud}*\nSensor ID: `{sensor.id}` Mac Address: `{sensor.mac_address}`\n" + "\n".join(alertas)
     
             if sensor.id not in ultimas_alertas:
                 self.notificator.send(mensaje)

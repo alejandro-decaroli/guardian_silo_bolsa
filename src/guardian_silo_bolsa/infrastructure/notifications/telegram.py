@@ -1,7 +1,7 @@
-import requests
+import requests # type: ignore
 import os
-from dotenv import load_dotenv
-from ...domain.services.notifications import INotificatorService
+from dotenv import load_dotenv # type: ignore
+from ...domain.services.notifications import INotificatorService 
 
 load_dotenv()
 

@@ -1,12 +1,12 @@
-import requests
+import requests # type: ignore
 import time
 import random
 from datetime import datetime
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 from typing import Any
-from fastapi.responses import JSONResponse
-from fastapi import HTTPException, status
+from fastapi.responses import JSONResponse # type: ignore
+from fastapi import HTTPException, status # type: ignore
 
 load_dotenv()
 
@@ -27,9 +27,9 @@ class Sensor:
         self.mac_address = mac_address
         self.api_key = None
         self.modo = "NORMAL"
-        self.temp = 20
-        self.hum = 10
-        self.co2 = 350
+        self.temp = 20.0
+        self.hum = 10.0
+        self.co2 = 350.0
         self.handshake = False
 
     def do_handshake(self) -> None:

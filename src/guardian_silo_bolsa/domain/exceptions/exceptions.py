@@ -1,4 +1,4 @@
-from fastapi import status
+from fastapi import status # type: ignore
 
 class AppError(Exception):
     def __init__(self, message: str, code: int):

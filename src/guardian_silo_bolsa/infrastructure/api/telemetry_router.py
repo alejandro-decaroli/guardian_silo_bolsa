@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends # type: ignore
 from ...domain.models.models import TelemetrySchema
 from ..database.deps import influxdb3_db, postgres_db
 from ...application.user_cases.telemetry import ValidateApiKey, SaveRecord, ChequearUmbrales
@@ -6,7 +6,7 @@ from ...infrastructure.backup.backup import CSVBackup
 from ...infrastructure.notifications.deps import telegram_notifier
 
 
-def get_use_case(case: str) -> callable:
+def get_use_case(case: str) -> callable: # type: ignore
 
     def _get():
         if case == "auntentication":

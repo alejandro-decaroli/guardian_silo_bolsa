@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, status, Response
+from fastapi import APIRouter, Depends, status, Response # type: ignore
 from ...application.user_cases.user import (
     GetUser, 
-    GetUsers, 
     UpdateUser, 
     DeleteUser,
     LoginUser,
@@ -13,13 +12,12 @@ from ...domain.models.models import Usuario, UsuarioBase, UsuarioValidation
 from typing import List, Dict, Any
 from ..security.deps import get_current_user
 
-def get_user_case(case_type: str) -> callable:
+def get_user_case(case_type: str) -> callable: # type: ignore
     """
     Factory function to get the appropriate user case service
     """
     def _get_case():
         if case_type == "get": return GetUser(postgres_db)
-        if case_type == "get_all": return GetUsers(postgres_db)
         if case_type == "update": return UpdateUser(postgres_db, auth_service_instance)
         if case_type == "delete": return DeleteUser(postgres_db)
         if case_type == "login": return LoginUser(postgres_db, auth_service_instance)
@@ -44,10 +42,6 @@ user_router = APIRouter(prefix="/users", tags=["users"])
 @user_router.get("/{user_id}", response_model=Usuario, status_code=status.HTTP_200_OK)
 def get_user(user_id: int, case: GetUser = Depends(get_user_case("get")), current_user: Usuario = Depends(get_current_user)) -> Usuario:
     return case.execute(user_id, current_user.role)
-
-@user_router.get("/", status_code=status.HTTP_200_OK, response_model=List[Usuario])
-def get_users(case: GetUsers = Depends(get_user_case("get_all")), current_user: Usuario = Depends(get_current_user)) -> List[Usuario]:
-    return case.execute(current_user.role)
 
 @user_router.put("/update/{user_id}", status_code=status.HTTP_200_OK)
 def update_user(user_id: int, user: UsuarioBase, case: UpdateUser = Depends(get_user_case("update")), current_user: Usuario = Depends(get_current_user)) -> Usuario:

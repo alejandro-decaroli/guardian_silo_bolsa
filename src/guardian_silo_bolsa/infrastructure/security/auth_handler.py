@@ -1,8 +1,8 @@
-import jwt
+import jwt # type: ignore
 from datetime import datetime, timedelta, timezone
-from typing import Optional
-from passlib.context import CryptContext
-from fastapi import HTTPException, status
+from typing import Optional, Dict
+from passlib.context import CryptContext # type: ignore
+from fastapi import HTTPException, status # type: ignore
 import os
 from ...domain.services.auth_interface import IAuthService
 
@@ -43,7 +43,7 @@ class AuthService(IAuthService):
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
 
-    def decode_token(self, token: str) -> Optional[dict]:
+    def decode_token(self, token: str) -> Optional[Dict]:
         """
         Decodifica y valida un token. 
         Si el token expiró o es inválido, devuelve None o levanta una excepción.

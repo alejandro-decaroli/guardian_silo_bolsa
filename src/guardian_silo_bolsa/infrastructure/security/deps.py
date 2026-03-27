@@ -1,4 +1,4 @@
-from fastapi import Request, HTTPException, status
+from fastapi import Request, HTTPException, status # type: ignore
 from ..security.auth_handler import auth_service_instance 
 from ..database.deps import postgres_db 
 from ...domain.models.models import Usuario
@@ -22,7 +22,10 @@ def get_current_user(request: Request) -> Usuario:
     
     user_id = payload.get("sub")
     
-    user = postgres_db.get_user_by_id(int(user_id)) 
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
+    
+    user = postgres_db.get_entity(user_id, Usuario) 
     
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario inexistente")
