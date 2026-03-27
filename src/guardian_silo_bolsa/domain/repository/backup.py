@@ -7,11 +7,11 @@ class IBackup(ABC):
         self.client = client
 
     @abstractmethod
-    def create_backup(self) -> Dict:
+    def create_backup(self) -> Dict[str,Any]:
         """Crea un backup de la base de datos."""
         pass
 
     @abstractmethod
-    def restore_backup(self) -> Dict:
+    def restore_backup(self) -> Dict[str,Any]:
         """Restaura un backup de la base de datos."""
         pass

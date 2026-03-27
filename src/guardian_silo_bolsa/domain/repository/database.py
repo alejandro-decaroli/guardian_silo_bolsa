@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import List, Any, Optional, Type
+from typing import List, Any, Optional, Type, Tuple
 from ..models.models import (
     Usuario, 
     UsuarioValidation, 
     UsuarioBase, 
-    Sensor
+    Sensor,
+    Silobolsa
 )
 from sqlmodel import SQLModel # type: ignore
 
@@ -37,10 +38,14 @@ class IDatabase(ABC):
 class IUserDatabase(IDatabase):
     """Interfaz para la base de datos de usuarios. Encargada de manejar todos los datos relacionados con los usuarios."""
 
+    @abstractmethod
+    def get_silo_by_sensor(self, sensor: Sensor) -> Silobolsa:
+        """Obtiene el silobolsa vinculado al sensor"""
+        pass
 
     @abstractmethod
-    def validate_api_key(self, api_key: str) -> dict:
-        """Valida la API key de un sensor."""
+    def validate_api_key(self, api_key: str) -> Sensor:
+        """Valida la API key de un sensor, devuelve el sensor y su silobolsa asociado."""
         pass
 
     @abstractmethod

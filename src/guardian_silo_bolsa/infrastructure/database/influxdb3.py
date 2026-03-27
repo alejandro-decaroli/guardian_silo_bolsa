@@ -9,6 +9,7 @@ from influxdb_client_3 import (
 from dotenv import load_dotenv # type: ignore
 import os
 from ...domain.repository.database import ISensorDatabase
+from ...domain.exceptions.exceptions import AppError
 
 
 load_dotenv()
@@ -28,12 +29,8 @@ class InfluxDB3Database(ISensorDatabase):
     
     def write(self, data: dict) -> bool:
         """Escribe datos en el TSDB."""
-        try:
-            self.client.write(record=data)
-            return True
-        except Exception as e:
-            print(f"Error writing to InfluxDB: {e}")
-            return False
+        self.client.write(record=data)
+        return True
     
     def read(self, query: str) -> bool:
         """Lee datos del TSDB."""

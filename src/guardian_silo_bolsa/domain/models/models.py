@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 from sqlmodel import Field, SQLModel, Relationship, Column # type: ignore
-from sqlalchemy import String # type ignore
+from sqlalchemy import String # type: ignore
 from sqlalchemy import Enum as SAEnum # type: ignore
 
 class TelemetrySchema(SQLModel):

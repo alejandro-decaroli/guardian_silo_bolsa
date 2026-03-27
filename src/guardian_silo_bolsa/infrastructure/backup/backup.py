@@ -5,7 +5,7 @@ import os
 from ...domain.repository.backup import IBackup
 from ...domain.models.models import TelemetrySchema
 from ...domain.exceptions.exceptions import AppError
-from typing import Dict
+from typing import Dict, Any
 
 load_dotenv()
 # Definimos la ruta del archivo 
@@ -20,7 +20,7 @@ class CSVBackup(IBackup):
             path = str(CSV_FILE)
         self.path = path
 
-    def create_backup(self, datos: TelemetrySchema, silobolsa_id: int, sensor_id: int) -> Dict:
+    def create_backup(self, datos: TelemetrySchema, sensor_id: int) -> Dict[str,Any]:
 
         try:
             # Verifico si el archivo existe para escribir la cabecera la primera vez
@@ -31,12 +31,11 @@ class CSVBackup(IBackup):
                 
                 # Cabecera (solo si el archivo es nuevo)
                 if not file_exists:
-                    writer.writerow(["timestamp", "silo_id", "sensor_id", "temp", "hum", "co2"])
+                    writer.writerow(["timestamp", "sensor_id", "temp", "hum", "co2"])
                 
                 # Fila de datos
                 writer.writerow([
                     datos.timestamp,
-                    silobolsa_id,
                     sensor_id,
                     datos.temp,
                     datos.hum,
@@ -44,12 +43,12 @@ class CSVBackup(IBackup):
                 ])
 
                 f.flush()
-            
+            return {"status_code": 201, "message": "Backup creado con éxito"}
         except Exception as e:
             raise AppError("Error al crear backup", 500)
-        return {"status_code": 201, "message": "Backup creado con éxito"}
+        
 
-    def restore_backup(self) -> Dict:
+    def restore_backup(self) -> Dict[str,Any]:
         try:
             # TODO: Implementar restauración desde CSV
             pass

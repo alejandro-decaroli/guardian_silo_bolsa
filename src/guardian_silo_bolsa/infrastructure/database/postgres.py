@@ -38,6 +38,18 @@ class PostgresDatabase(IUserDatabase):
     def __init__(self, client=engine):
         self.engine = client
 
+    def get_silo_by_sensor(self, sensor: Sensor) -> Silobolsa:
+        with Session(self.engine) as session:
+            try:
+                statement = select(Silobolsa).where(Silobolsa.sensor_id == sensor.id)
+                silo: Silobolsa = session.exec(statement).first()
+                if silo is None:
+                    raise EntityNotFoundError("Silo no encontrado")
+                return silo
+            except Exception as e:
+                session.rollback()
+                raise e
+
     def validate_api_key(self, api_key: str) -> Sensor:
         with Session(self.engine) as session:
             try:

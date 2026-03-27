@@ -1,7 +1,8 @@
+from ...domain.exceptions.exceptions import AppError
 from ...domain.repository.database import ISensorDatabase, IUserDatabase
 from ...domain.services.notifications import INotificatorService
 from ...domain.models.models import TelemetrySchema
-from typing import Dict
+from typing import Dict, Tuple
 from datetime import timedelta
 from ...domain.models.models import Sensor, Silobolsa
 
@@ -11,7 +12,7 @@ class SaveRecord:
     def __init__(self, time_series_db: ISensorDatabase):
         self.time_series_db = time_series_db
     
-    def execute(self, payload: TelemetrySchema, sensor_id: int, silo_id: int) -> Dict[str,str]:
+    def execute(self, payload: TelemetrySchema, sensor_id: int) -> Dict[str,str]:
 
         try:
 
@@ -27,7 +28,6 @@ class SaveRecord:
                         "measurement": "sensores_silo",
                         "tags": {
                             "sensor_id": sensor_id, 
-                            "silo": silo_id
                         },
                         "fields": fields,
                         "timestamp": payload.timestamp
@@ -36,18 +36,18 @@ class SaveRecord:
             if not fields:
              
                 return {
-                    "status": "202",
+                    "status_code": 202,
                     "message": "Aceptado, pero hay valores nulos en todos los 'fields'. No se registra el punto en influxdb3, pero si en el archivo csv"
                 }
             self.time_series_db.write(data=point) 
         
             return {
-                "status": "201",
+                "status_code": 201,
                 "message": "Registro creado con éxito en influxdb3 y archivo csv"
             }
         
         except Exception as e:
-            raise Exception("Error al guardar el registro", str(e))
+            raise AppError(str(e), 500)
 
 
 class ValidateApiKey:
@@ -55,14 +55,14 @@ class ValidateApiKey:
     def __init__(self, user_db: IUserDatabase):
         self.user_db = user_db
     
-    def execute(self, api_key: str) -> dict:
-        valid_api_key = self.user_db.validate_api_key(api_key)
-        if not valid_api_key:
-            raise Exception("API key no válida")
-        return {
-            "sensor": valid_api_key["sensor"], 
-            "silobolsa": valid_api_key["silobolsa"]
-        }
+    def execute(self, api_key: str) -> Tuple[Sensor, Silobolsa]:
+        sensor: Sensor = self.user_db.validate_api_key(api_key)
+        if not sensor:
+            raise AppError("API key no válida", 400)
+        silo: Silobolsa = self.user_db.get_silo_by_sensor(sensor)
+        if not silo:
+            raise AppError("No esta vinculado a ningun silo", 404)
+        return sensor, silo
 
 
 THRESHOLDS = {
@@ -97,7 +97,7 @@ class ChequearUmbrales():
 
         if alertas:
 
-            mensaje = f"🚨 *Alerta en Silo ID:{silobolsa.id} Ubicación: {silobolsa.latitud} Longitud: {silobolsa.longitud}*\nSensor ID: `{sensor.id}` Mac Address: `{sensor.mac_address}`\n" + "\n".join(alertas)
+            mensaje = f"🚨 *Alerta en Silo ID:* {silobolsa.id}\n*Ubicación:* {silobolsa.ubicacion}\n*Grano:* {silobolsa.grano}\n*Sensor ID:* `{sensor.id}`\n*Modelo:* {sensor.modelo}\n" + "\n".join(alertas)
     
             if sensor.id not in ultimas_alertas:
                 self.notificator.send(mensaje)

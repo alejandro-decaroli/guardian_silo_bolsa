@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends # type: ignore
-from ...domain.models.models import TelemetrySchema
+from ...domain.models.models import TelemetrySchema, Sensor, Silobolsa
 from ..database.deps import influxdb3_db, postgres_db
 from ...application.user_cases.telemetry import ValidateApiKey, SaveRecord, ChequearUmbrales
 from ...infrastructure.backup.backup import CSVBackup
 from ...infrastructure.notifications.deps import telegram_notifier
-
+from typing import Tuple
 
 def get_use_case(case: str) -> callable: # type: ignore
 
@@ -30,10 +30,11 @@ async def ingest_data(
     check: ChequearUmbrales = Depends(get_use_case("check"))
     ) -> dict: 
 
-    obj = auth.execute(payload.api_key)
-    check.check_thresholds(payload, obj["sensor"], obj["silobolsa"])
-    backup_status = backup.create_backup(payload, obj["silobolsa"].id, obj["sensor"].id)
-    save_record_status = case.execute(payload, obj["sensor"].id, obj["silobolsa"].id)
+    sensor, silo = auth.execute(payload.api_key)
+    check.check_thresholds(payload, sensor, silo)
+    if sensor.id:
+        backup_status = backup.create_backup(payload, sensor.id)
+        save_record_status = case.execute(payload, sensor.id)
 
     return {
         "backup_status": backup_status.get("status_code", 500),
