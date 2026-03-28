@@ -17,6 +17,16 @@ services:
       - ./src:/app/src
     command: uvicorn src.guardian_silo_bolsa.main:app --host 0.0.0.0 --port 8000 --reload
 
+  guardian_frontend:
+    build: ./frontend
+    container_name: guardian_front
+    ports:
+      - "80:80"
+    depends_on:
+      - guardian_api
+    networks:
+      - silo_net
+
   simulator:
     build: .
     container_name: fake_sensor_data

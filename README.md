@@ -226,7 +226,13 @@ docker compose up -d guardian_api
 >
 > **Usuario de prueba → `admin@example.com` / contraseña → `admin`**
 
-### 6. (Opcional) Levantar el simulador de sensores
+### 6. Levantar el frontend
+
+```bash
+docker compose up -d guardian_frontend
+```
+
+### 7. (Opcional) Levantar el simulador de sensores
 
 Si no querés generar datos manualmente, el simulador envía lecturas reales cada 2 segundos en nombre de los 6 sensores sintéticos, alternando entre los estados Normal, Calentamiento y Falla:
 
@@ -236,7 +242,7 @@ docker compose up -d simulator
 
 Con esto el sistema completo está corriendo: las lecturas llegan a la API, se guardan en InfluxDB y CSV, y si algún valor supera los umbrales se genera una alerta y llega el mensaje por Telegram.
 
-### 7. (Opcional) Explorador de InfluxDB
+### 8. (Opcional) Explorador de InfluxDB
 
 Para inspeccionar los datos en bruto directamente en InfluxDB:
 
