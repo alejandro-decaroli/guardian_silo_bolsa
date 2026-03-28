@@ -46,20 +46,16 @@ class Sensor:
             time.sleep(5)
 
     def simular(self) -> None:
-        """Método para simular los valores de los sensores"""
 
         if self.modo == "NORMAL":
-
-            if self.temp is None:
-                self.temp = round(20 + random.uniform(-0.1, 0.1), 2)
-            if self.hum is None:
-                self.hum = round(10 + random.uniform(-0.05, 0.05), 2)
-            if self.co2 is None:
-                self.co2 = round(350 + random.uniform(-5, 5), 2)
+            # Siempre actualizamos con pequeña variación aleatoria
+            self.temp = round(20 + random.uniform(-1.5, 1.5), 2)
+            self.hum = round(10 + random.uniform(-0.5, 0.5), 2)
+            self.co2 = round(350 + random.uniform(-15, 15), 2)
 
             if random.random() < 0.01:
                 self.modo = random.choice(["CALENTAMIENTO", "FALLA_SENSOR"])
-            
+
         elif self.modo == "CALENTAMIENTO":
             incremento_hum = random.uniform(0.05, 0.1)
             self.hum = round(self.hum + incremento_hum, 2)
@@ -70,16 +66,20 @@ class Sensor:
             incremento_temp = (incremento_co2 / 100) + random.uniform(0.1, 0.3)
             self.temp = round(self.temp + incremento_temp, 2)
 
-            if self.temp > 45: 
-                 self.modo = "FALLA_SENSOR"
+            if self.temp > 45:
+                self.modo = "FALLA_SENSOR"
 
         elif self.modo == "FALLA_SENSOR":
             self.temp = None
             self.co2 = None
             self.hum = None
-            
-            if random.random() < 0.1: 
+
+            if random.random() < 0.1:
                 self.modo = "NORMAL"
+                # Al volver a normal reseteamos a valores base
+                self.temp = 20.0
+                self.hum = 10.0
+                self.co2 = 350.0
         
 
     def publicar(self) -> JSONResponse:
