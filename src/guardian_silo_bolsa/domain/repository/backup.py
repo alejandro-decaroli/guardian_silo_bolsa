@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
+from ..models.models import TelemetrySchema
 
 class IBackup(ABC):
     """Interfaz base para el backup."""
@@ -7,7 +8,7 @@ class IBackup(ABC):
         self.client = client
 
     @abstractmethod
-    def create_backup(self) -> Dict[str,Any]:
+    def create_backup(self, datos: TelemetrySchema, sensor_id: int) -> Dict[str,Any]:
         """Crea un backup de la base de datos."""
         pass
 

@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import List, Any, Optional, Type, Tuple
+from typing import List, Any, Optional, Type, Tuple, Dict
 from ..models.models import (
     Usuario, 
     UsuarioValidation, 
     UsuarioBase, 
     Sensor,
-    Silobolsa
+    Silobolsa,
+    TelemetryRecord
 )
 from sqlmodel import SQLModel # type: ignore
 
@@ -87,7 +88,17 @@ class IUserDatabase(IDatabase):
     def delete_entity(self, entity_id: int, model: Type[SQLModel]) -> None:
         """Elimina una entidad."""
         pass
-    
+
+    @abstractmethod
+    def get_alerts_for_user(self, user_id: int) -> List[TelemetryRecord]:
+        """Obtiene todas las alertas de los silos que pertenecen al usuario."""
+        pass
+
+    @abstractmethod
+    def mark_alert_seen(self, alert_id: int) -> TelemetryRecord:
+        """Marca una alerta como vista."""
+        pass
+
 
 class ISensorDatabase(IDatabase):
     """Interfaz para la base de datos para series temporales. Encargada de manejar los datos de los sensores."""
@@ -102,6 +113,6 @@ class ISensorDatabase(IDatabase):
         pass
     
     @abstractmethod
-    def get_data(self, query: str) -> bool:
-        """Obtiene datos del TSDB."""
+    def get_data(self, query: str) -> List[Dict[str, Any]]:
+        """Obtiene datos del TSDB y los devuelve como lista de diccionarios."""
         pass

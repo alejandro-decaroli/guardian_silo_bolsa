@@ -17,7 +17,7 @@ class TelemetrySchema(SQLModel):
 class TelemetryRecord(SQLModel, table=True): # type: ignore
     """Esquema de los datos para las "alertas" y "visto" de los registros"""
     id: int| None = Field(default=None, primary_key=True)
-    alerta: bool = Field(default="False")
+    alerta: bool = Field(default=False)
     visto: bool = Field(default=False)
     mensaje: str = Field(default="")
     silo: int
@@ -55,7 +55,7 @@ class Sensor(SensorBase, table=True): # type: ignore
     api_key: Optional[str] = Field(default=None)
     estado: EstadoSensor = Field(default=EstadoSensor.ACTIVO, sa_column=Column(SAEnum(EstadoSensor), nullable=False)) # type: ignore
     campo_id: int | None = Field(default=None, foreign_key="campo.id", ondelete="CASCADE")
-    campo: Optional[Campo] = Relationship(back_populates="sensores")
+    campo: Optional["Campo"] = Relationship(back_populates="sensores")
     
 class SilobolsaBase(SQLModel):
     """Base para la tabla de silobolsa."""
@@ -78,7 +78,7 @@ class Silobolsa(SilobolsaBase, table=True): # type: ignore
     id: int | None = Field(default=None, primary_key=True)
     sensor_id: int | None = Field(default=None, foreign_key="sensor.id", unique=True, ondelete="CASCADE")
     campo_id: int | None = Field(default=None, foreign_key="campo.id", ondelete="CASCADE") 
-    campo: Optional[Campo] = Relationship(back_populates="silobolsas")
+    campo: Optional["Campo"] = Relationship(back_populates="silobolsas")
     
 
 class CampoBase(SQLModel):
@@ -92,7 +92,7 @@ class Campo(CampoBase, table=True): # type: ignore
     """
     id: int | None = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id", ondelete="CASCADE")
-    usuario: Optional[Usuario] = Relationship(back_populates="campos")
+    usuario: Optional["Usuario"] = Relationship(back_populates="campos")
     silobolsas: Optional[List[Silobolsa]] = Relationship(back_populates="campo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
     sensores: Optional[List[Sensor]] = Relationship(back_populates="campo", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 

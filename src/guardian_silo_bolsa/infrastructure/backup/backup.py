@@ -49,10 +49,4 @@ class CSVBackup(IBackup):
         
 
     def restore_backup(self) -> Dict[str,Any]:
-        try:
-            # TODO: Implementar restauración desde CSV
-            pass
-        except Exception as e:
-            raise AppError("Error al restaurar backup", 500)
-        
-        return {"status_code": 200, "message": "Backup restaurado con éxito"}
+        raise NotImplementedError

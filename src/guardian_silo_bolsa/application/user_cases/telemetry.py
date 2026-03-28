@@ -1,10 +1,11 @@
 from ...domain.exceptions.exceptions import AppError
 from ...domain.repository.database import ISensorDatabase, IUserDatabase
 from ...domain.services.notifications import INotificatorService
-from ...domain.models.models import TelemetrySchema, TelemetryRecord
-from typing import Dict, Tuple, Any
+from ...domain.models.models import TelemetrySchema, TelemetryRecord, Silobolsa, Campo
+from typing import Dict, Tuple, Any, List
 from datetime import timedelta
 from ...domain.models.models import Sensor, Silobolsa
+from ...domain.exceptions.exceptions import EntityNotFoundError
 
 
 class SaveRecord:
@@ -80,7 +81,6 @@ class ChequearUmbrales():
     def _save_alerts(self, alert: TelemetryRecord) -> None:
         """Guarda las alertas en base de datos"""
         self.repo.create_entity(alert)
-        print("ALERTA GUARDADA")
 
     def check_thresholds(self, payload: TelemetrySchema, sensor: Sensor, silobolsa: Silobolsa) -> None:
    
@@ -115,9 +115,9 @@ class ChequearUmbrales():
                 "silo":silobolsa.id
             }
 
-            alerta = TelemetryRecord.model_validate(alerta_content)
+            alerta_enviar: TelemetryRecord = TelemetryRecord.model_validate(alerta_content)
 
-            self._save_alerts(alerta)
+            self._save_alerts(alerta_enviar)
 
             mensaje = f"🚨 *Alerta en Silo ID:* {silobolsa.id}\n*Ubicación:* {silobolsa.ubicacion}\n*Grano:* {silobolsa.grano}\n*Sensor ID:* `{sensor.id}`\n*Modelo:* {sensor.modelo}\n" + "\n".join(alertas)
     
@@ -133,3 +133,33 @@ class ChequearUmbrales():
             if sensor.id in ultimas_alertas:
                 ultimas_alertas.pop(sensor.id)
     
+
+
+class GetSiloTelemetry:
+    """Caso de uso para obtener los datos de telemetría de un silo de las últimas 24 horas."""
+
+    def __init__(self, user_db: IUserDatabase, sensor_db: ISensorDatabase):
+        self.user_db = user_db
+        self.sensor_db = sensor_db
+
+    def execute(self, silo_id: int, current_user_id: int) -> List[Dict[str, Any]]:
+        # Verificamos que el silo exista y pertenezca al usuario
+        silo: Silobolsa = self.user_db.get_entity(silo_id, Silobolsa)
+        if silo.campo_id:
+            campo: Campo = self.user_db.get_entity(silo.campo_id, Campo)
+
+        if campo.usuario_id != current_user_id:
+            raise EntityNotFoundError("Silo")
+
+        if not silo.sensor_id:
+            raise AppError("El silobolsa no tiene un sensor vinculado.", 404)
+
+        query = f"""
+            SELECT time, co2, hum, temp
+            FROM sensores_silo
+            WHERE sensor_id = '{silo.sensor_id}'
+            AND time >= now() - interval '24 hours'
+            ORDER BY time ASC
+        """
+
+        return self.sensor_db.get_data(query)

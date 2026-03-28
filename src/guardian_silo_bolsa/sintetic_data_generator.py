@@ -150,9 +150,11 @@ def create_silobolsa(db: IUserDatabase) -> None:
             "grano": Grano.SOJA
         }
     ]
+    sensor_id = 1
     for silobolsa_data_item in silobolsa_data:
         silobolsa = SilobolsaBase(**silobolsa_data_item)
-        db_silobolsa = Silobolsa.model_validate(silobolsa, update={"campo_id": 1})
+        db_silobolsa = Silobolsa.model_validate(silobolsa, update={"campo_id": 1, "sensor_id": sensor_id})
+        sensor_id = sensor_id + 1
         db.create_entity(db_silobolsa)
 
 

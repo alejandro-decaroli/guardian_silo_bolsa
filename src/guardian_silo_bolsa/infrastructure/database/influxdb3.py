@@ -1,13 +1,14 @@
-from influxdb_client_3 import (
+from influxdb_client_3 import ( # type: ignore
   InfluxDBClient3, 
   InfluxDBError, 
   Point, 
   WritePrecision,
   WriteOptions,
   write_client_options
-  ) # type: ignore
+  ) 
 from dotenv import load_dotenv # type: ignore
 import os
+from typing import List, Dict, Any
 from ...domain.repository.database import ISensorDatabase
 from ...domain.exceptions.exceptions import AppError
 
@@ -41,14 +42,13 @@ class InfluxDB3Database(ISensorDatabase):
             print(f"Error reading from InfluxDB: {e}")
             return False
     
-    def get_data(self, query: str) -> bool:
-        """Obtiene datos del TSDB."""
+    def get_data(self, query: str) -> List[Dict[str, Any]]:
+        """Obtiene datos del TSDB y los devuelve como lista de diccionarios."""
         try:
-            self.client.query(query)
-            return True
+            table = self.client.query(query)
+            return table.to_pylist()
         except Exception as e:
-            print(f"Error getting data from InfluxDB: {e}")
-            return False
+            raise AppError(f"Error al consultar InfluxDB: {str(e)}", 500)
 
     def create_db_and_tables(self):
         """Crea la base de datos y las tablas."""

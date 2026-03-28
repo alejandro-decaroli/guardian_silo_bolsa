@@ -11,6 +11,7 @@ from ...domain.models.models import (
     Usuario,
     UsuarioBase,
     UsuarioValidation,
+    TelemetryRecord,
 )
 from ...domain.exceptions.exceptions import (
     EntityAsociatedError,
@@ -269,6 +270,48 @@ class PostgresDatabase(IUserDatabase):
         except Exception as e:
             return {"status": "offline", "database": "postgresql", "error": str(e)}
 
-    
+    def get_alerts_for_user(self, user_id: int) -> List[TelemetryRecord]:
+        """
+        Obtiene todas las alertas (TelemetryRecord) de los silos que pertenecen al usuario.
+        Recorre la cadena: usuario → campos → silobolsas → alertas.
+        """
+        with Session(self.engine) as session:
+            try:
+                campos = session.exec(
+                    select(Campo).where(Campo.usuario_id == user_id)
+                ).all()
+
+                campo_ids = [campo.id for campo in campos]
+
+                silos = session.exec(
+                    select(Silobolsa).where(Silobolsa.campo_id.in_(campo_ids))
+                ).all()
+
+                silo_ids = [silo.id for silo in silos]
+
+                alertas = session.exec(
+                    select(TelemetryRecord).where(TelemetryRecord.silo.in_(silo_ids))
+                ).all()
+
+                return list(alertas)
+            except Exception as e:
+                session.rollback()
+                raise e
+
+    def mark_alert_seen(self, alert_id: int) -> TelemetryRecord:
+        """Marca una alerta como vista (visto=True)."""
+        with Session(self.engine) as session:
+            try:
+                alerta = session.get(TelemetryRecord, alert_id)
+                if not alerta:
+                    raise EntityNotFoundError("Alerta")
+                alerta.visto = True
+                session.add(alerta)
+                session.commit()
+                session.refresh(alerta)
+                return alerta
+            except Exception as e:
+                session.rollback()
+                raise e
 
 

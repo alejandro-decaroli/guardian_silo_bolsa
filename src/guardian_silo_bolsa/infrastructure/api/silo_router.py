@@ -7,14 +7,15 @@ from ...application.user_cases.silo import (
     DeleteSilo,
     SetearSensor,
 )
-from ..database.deps import postgres_db
+from ...application.user_cases.telemetry import GetSiloTelemetry
+from ..database.deps import postgres_db, influxdb3_db
 from ...domain.models.models import (
     Silobolsa, 
     SilobolsaBase, 
     Usuario,
     SensorSilo
 )
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from ..security.deps import get_current_user
 
 def get_user_case(case_type: str):
@@ -25,6 +26,7 @@ def get_user_case(case_type: str):
         if case_type == "update": return UpdateSilo(postgres_db)
         if case_type == "delete": return DeleteSilo(postgres_db)
         if case_type == "setear_sensor": return SetearSensor(postgres_db)
+        if case_type == "telemetry": return GetSiloTelemetry(postgres_db, influxdb3_db)
     return _get_case
 
 silo_router = APIRouter(prefix="/silos", tags=["silos"], dependencies=[Depends(get_current_user)])
@@ -53,4 +55,30 @@ def delete_silo(silo_id: int, case: DeleteSilo = Depends(get_user_case("delete")
 def setear_sensor(data: SensorSilo, case: SetearSensor = Depends(get_user_case("setear_sensor")), current_user: Usuario = Depends(get_current_user)) -> str:
     case.execute(data, current_user.id)
     return "Sensor vinculado con éxito"
+
+@silo_router.get(
+    "/{silo_id}/telemetry",
+    status_code=status.HTTP_200_OK,
+    response_model=List[Dict[str, Any]]
+)
+def get_silo_telemetry(
+    silo_id: int,
+    case: GetSiloTelemetry = Depends(get_user_case("telemetry")),
+    current_user: Usuario = Depends(get_current_user)
+) -> List[Dict[str, Any]]:
+    """
+    Devuelve las lecturas de humedad, temperatura y CO2 de las últimas 24 horas
+    del sensor vinculado al silobolsa. Usado para renderizar los gráficos en el
+    frontend.
+
+    Formato de cada elemento de la lista:
+    {
+        "time": <datetime>,
+        "temp": <float | null>,
+        "hum":  <float | null>,
+        "co2":  <float | null>
+    }
+    """
+    return case.execute(silo_id, current_user.id)
+
 

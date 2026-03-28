@@ -25,7 +25,7 @@ def get_current_user(request: Request) -> Usuario:
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido")
     
-    user = postgres_db.get_entity(user_id, Usuario) 
+    user = postgres_db.get_entity(int(user_id), Usuario) 
     
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario inexistente")

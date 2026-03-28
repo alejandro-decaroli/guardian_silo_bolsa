@@ -68,4 +68,8 @@ class DeleteSensor:
         self.repo = repo
     
     def execute(self, sensor_id: int, current_user_id: int) -> None:
+        sensor = self.repo.get_entity(sensor_id, Sensor)
+        campo = self.repo.get_entity(sensor.campo_id, Campo)
+        if campo.usuario_id != current_user_id:
+            raise EntityNotFoundError("Sensor") 
         self.repo.delete_entity(sensor_id, Sensor)

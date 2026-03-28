@@ -20,7 +20,7 @@ def get_user_case(case_type: str):
         if case_type == "delete": return DeleteCampo(postgres_db)
     return _get_case
 
-campo_router = APIRouter(prefix="/campos", tags=["campos"], dependencies=[Depends(get_current_user)])
+campo_router = APIRouter(prefix="/campos", tags=["campos"])
 
 @campo_router.get("/{campo_id}", response_model=Campo)
 def get_campo(campo_id: int, current_user: Usuario = Depends(get_current_user), case: GetCampo = Depends(get_user_case("get"))) -> Campo:
