@@ -319,6 +319,18 @@ src/guardian_silo_bolsa/
 
 ---
 
+## Images:
+
+<img width="1896" height="916" alt="Screenshot 2026-03-28 at 17-46-27 Guardián Silobolsa" src="https://github.com/user-attachments/assets/3ca26bbb-9502-4bf2-affe-b2c001f4d2f5" />
+<img width="1896" height="916" alt="Screenshot 2026-03-28 at 17-46-45 Guardián Silobolsa" src="https://github.com/user-attachments/assets/5bb3e3e1-0d35-4a9f-be12-af0e40d062ff" />
+<img width="1896" height="916" alt="Screenshot 2026-03-28 at 17-46-58 Guardián Silobolsa" src="https://github.com/user-attachments/assets/32efb0ec-a6fe-4657-84c8-6d8e53381b0e" />
+<img width="1896" height="1240" alt="Screenshot 2026-03-28 at 17-47-09 Guardián Silobolsa" src="https://github.com/user-attachments/assets/97bbf6aa-1090-445b-8f44-842efb5e2df7" />
+<img width="1896" height="916" alt="Screenshot 2026-03-28 at 17-47-22 Guardián Silobolsa" src="https://github.com/user-attachments/assets/48d4fa1c-145c-4e93-bcbf-95f1213bc172" />
+<img width="1891" height="833" alt="Screenshot 2026-03-28 at 17-47-30 Guardián Silobolsa" src="https://github.com/user-attachments/assets/e42d1282-f1b1-46be-98f3-512bc94a3f1a" />
+<img width="1896" height="916" alt="Screenshot 2026-03-28 at 17-47-50 Guardián Silobolsa" src="https://github.com/user-attachments/assets/1e20570e-d7d9-45a5-b446-aa840ef76413" />
+<img width="1849" height="839" alt="Screenshot 2026-03-28 at 17-47-55 Guardián Silobolsa" src="https://github.com/user-attachments/assets/210c66ef-9883-4232-b15e-cdd7e59d0f53" />
+
+
 ## Autor
 
 [@alejandro-decaroli](https://github.com/alejandro-decaroli)
